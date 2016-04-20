@@ -1,0 +1,15 @@
+me that you want to access (without the .csv): 3
+
+Accessing 3 database...
+Traceback (most recent call last):
+  File "./CPTracker.py", line 113, in <module>
+    main()
+  File "./CPTracker.py", line 71, in main
+    AccessDB.access_db(name, DB_EXT)
+  File "/Users/ForteGS/Documents/OneDrive/Documents/ProgrammingPuzzles/CPTracker/AccessDB.py", line 7, in access_db
+    ifile = open(name + ext, "rb")
+IOError: [Errno 2] No such file or directory: '3.csv'
+
+1. CPTracker: Trivial bug. Just add a try catch block. There are various place requiring good input from user. The program crashes when receiving bad inputs.
+2. CPTracker: When creating a new database. If the new database name's already exist, ask the user if they want a new blank database and delete the old one.
+3. Use regex to verify the input entry when trying to append an entry to the database.
