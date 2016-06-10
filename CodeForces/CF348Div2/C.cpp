@@ -106,5 +106,6 @@ int main() {
 
     }
     print_chip(chip);
+    free(chip);
     return 0;
 }
