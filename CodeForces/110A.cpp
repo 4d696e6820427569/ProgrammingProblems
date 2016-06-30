@@ -29,17 +29,14 @@
 using namespace std;
 
 int main() {
-    int k,l,m,n,d,c;
-    cin >> k >> l >> m >> n >> d;
-    for (int i = 1; i < d + 1; i++) {
-        if (i % k == 0 ||
-                i % l == 0 ||
-                i % m == 0 ||
-                i % n == 0)
-            c++;
+    string s; int c = 0;
+    cin >> s;
+    for (int i = 0; i < s.size(); i++) {
+        if (s[i] == '4' || s[i] == '7') c++;
     }
 
-    cout << c << endl;
+    if (c == 4 || c == 7) cout << "YES" << endl;
+    else cout << "NO" << endl;
 
     return 0;
 }

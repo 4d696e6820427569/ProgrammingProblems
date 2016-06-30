@@ -22,24 +22,16 @@
 #define vii vector< vector <int> >
 #define FOR(x, size) for(int x = 0; x < size; ++x)
 
-/* Problem:
+/* Problem: Codeforces 546A
  * Minh Bui
  */
 
 using namespace std;
 
 int main() {
-    int k,l,m,n,d,c;
-    cin >> k >> l >> m >> n >> d;
-    for (int i = 1; i < d + 1; i++) {
-        if (i % k == 0 ||
-                i % l == 0 ||
-                i % m == 0 ||
-                i % n == 0)
-            c++;
-    }
-
-    cout << c << endl;
-
+    int k, n, w;
+    cin >> k >> n >> w;
+    int b = k*w*(w+1)/2 - n;
+    b > 0 ? cout << b << endl : cout << 0 << endl;
     return 0;
 }

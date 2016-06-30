@@ -29,17 +29,17 @@
 using namespace std;
 
 int main() {
-    int k,l,m,n,d,c;
-    cin >> k >> l >> m >> n >> d;
-    for (int i = 1; i < d + 1; i++) {
-        if (i % k == 0 ||
-                i % l == 0 ||
-                i % m == 0 ||
-                i % n == 0)
-            c++;
+    int n, t; string s;
+    cin >> n >> t >> s;
+    while(t--) {
+        for (int i = 0; i < s.size() - 1;) {
+            if (s[i] == 'B' && s[i+1] == 'G') {
+                swap(s[i], s[i+1]);
+                i += 2;
+            } else i++;
+        }
     }
-
-    cout << c << endl;
+    cout << s << endl;
 
     return 0;
 }

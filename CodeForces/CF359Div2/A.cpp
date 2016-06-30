@@ -29,17 +29,18 @@
 using namespace std;
 
 int main() {
-    int k,l,m,n,d,c;
-    cin >> k >> l >> m >> n >> d;
-    for (int i = 1; i < d + 1; i++) {
-        if (i % k == 0 ||
-                i % l == 0 ||
-                i % m == 0 ||
-                i % n == 0)
-            c++;
+    int n, c = 0, d;
+    unsigned long long x;
+    cin >> n >> x;
+    char op;
+    while (n--) {
+        cin >> op>> d;
+        if (op == '+') x += d;
+        else {
+            if (x < d) c++;
+            else x -= d;
+        }
     }
-
-    cout << c << endl;
-
+    cout << x << " " << c << endl;
     return 0;
 }

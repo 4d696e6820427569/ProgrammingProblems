@@ -29,17 +29,15 @@
 using namespace std;
 
 int main() {
-    int k,l,m,n,d,c;
-    cin >> k >> l >> m >> n >> d;
-    for (int i = 1; i < d + 1; i++) {
-        if (i % k == 0 ||
-                i % l == 0 ||
-                i % m == 0 ||
-                i % n == 0)
-            c++;
+    int n, m, c = 0;
+    cin >> n >> m;
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= m; j++)
+            if ((i + j) % 5 == 0) {
+                c++;
+                cout << i << " " << j << endl;
+            }
     }
-
     cout << c << endl;
-
     return 0;
 }

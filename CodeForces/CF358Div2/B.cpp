@@ -28,18 +28,26 @@
 
 using namespace std;
 
-int main() {
-    int k,l,m,n,d,c;
-    cin >> k >> l >> m >> n >> d;
-    for (int i = 1; i < d + 1; i++) {
-        if (i % k == 0 ||
-                i % l == 0 ||
-                i % m == 0 ||
-                i % n == 0)
-            c++;
+int find_mex(vector<int> a) {
+    int v = a[a.size()-1]-1;
+    for (int i = a.size() - 2; i >= 0; i--) {
+        if (v != a[i]) return v;
+        v--;
     }
+    if (v <= a[0]) return a[a.size()-1]+1;
+}
 
-    cout << c << endl;
-
+int main() {
+    int n;
+    cin >> n;
+    vector<int> a(n);
+    for (int i = 0; i < n;i++) {
+        cin >> a[i];
+    }
+    
+    
+    sort(a.begin(), a.end());
+    cout << find_mex(a) << endl;
+    
     return 0;
 }
