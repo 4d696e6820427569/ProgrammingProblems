@@ -29,8 +29,10 @@
 
 #include <vector>
 #include <cassert>
+#include <algorithm>
 
 using std::vector;
+using std::sort;
 
 struct Event
 {

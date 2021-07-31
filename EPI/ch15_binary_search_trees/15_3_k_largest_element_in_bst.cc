@@ -1,52 +1,69 @@
 /**
- * EPI Chapter 15 - Binary Search Trees
+ * EPI Chapter 15 Binary Search Trees
  *
- * 07/31/2021
+ * 15.3 Find the k largest elements in a BST
+ * A BST is a sorted data structure, which suggests that it should be possible 
+ * to find the k largest keys easily.
  *
- * Write a program that takes as input a binary tree and checks if the tree 
- * satisfies the BST property.
+ * Write a program that takes as input a BST and an integer k, and returns the
+ * k largest elements in the BST in decreasing order.
  *
- * Hint: Is it correct to check for each node that its key is greater than or
- * equal to the key at its left child and less than or equal to the key at its
- * right child? No. This is a global property. If it applies to every single
- * node, it doesn't mean it apply to the whole tree.
+ * Hint: What does an inorder traversal yield?
+ *
+ * A sorted list of keys.
  */
 
 #include <cstdio>
 #include <memory>
 #include <cassert>
 #include <limits>
+#include <vector>
 
 #include "../data_structures/binary_tree.hpp"
 
 using std::make_shared;
 using std::shared_ptr;
 using std::numeric_limits;
+using std::vector;
 
 using data_structures::BinaryTreeNode;
 
 using pBSTNode = std::shared_ptr<BinaryTreeNode<int>>;
 
-/**
- * Idea: Use recursion. Keep track of the values that left and right keys
- * are allowed to be greater / smaller than or equal to.
- */
-bool isBSTHelper(const pBSTNode& root, int min, int max)
+void PrintVect(const vector<int>& v)
 {
-    if (root == nullptr) {
-        return true;
-    } else {
-        if (root->data_ < min || root->data_ > max)
-            return false;
-        return isBSTHelper(root->left_, min, root->data_) &&
-            isBSTHelper(root->right_, root->data_, max);
+    for (const auto& e : v) {
+        printf("%d ", e);
+    }
+
+    printf("\n");
+}
+
+/**
+ * Idea: Perform partial inorder tree traversal. Decrease k every time
+ * we go up from the right node until k equals 0.
+ *
+ * Time complexity: O(h + k)
+ * Space complexity: O(1)
+ */
+void FindKLargestHelper(const pBSTNode& root, int k, vector<int>& res)
+{
+    if (root != nullptr && res.size() < static_cast<size_t>(k)) {
+        FindKLargestHelper(root->right_, k, res);
+        if (res.size() < static_cast<size_t>(k)) {
+            res.emplace_back(root->data_);
+            FindKLargestHelper(root->left_, k, res);
+        }
     }
 }
 
-bool isBST(const pBSTNode& root)
+vector<int> FindKLargestInBST(const pBSTNode& root, int k )
 {
-   return isBSTHelper(root, numeric_limits<int>::min(), numeric_limits<int>::max()); 
+    vector<int> res;
+    FindKLargestHelper(root, k, res);
+    return res;
 }
+
 
 int main()
 {
@@ -84,7 +101,10 @@ int main()
     tc1_L->right_       = tc1_M;
 
     tc1_O->right_       = tc1_P;
-    assert(isBST(tc1_A));
 
+    vector<int> tc1_res {53, 47, 43};
+    int tc1_k           = 3;
+    assert(FindKLargestInBST(tc1_A, tc1_k) == tc1_res);
+    vector<int> tc1_debug = FindKLargestInBST(tc1_A, tc1_k);
     return 0;
 }

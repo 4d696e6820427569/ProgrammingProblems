@@ -26,6 +26,7 @@
 
 #include <vector>
 #include <cassert>
+#include <cstdio>
 
 using std::vector;
 

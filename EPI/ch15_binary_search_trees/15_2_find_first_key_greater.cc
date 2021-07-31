@@ -1,15 +1,13 @@
 /**
- * EPI Chapter 15 - Binary Search Trees
+ * EPI Chapter 15 Binary Search Trees
  *
- * 07/31/2021
+ * 15.2 Find a the first key greater than a given value in a BST
  *
- * Write a program that takes as input a binary tree and checks if the tree 
- * satisfies the BST property.
+ * Write a program that takes as input a BST and a value, and returns the first
+ * key that would appear in an inorder traversal which is greater than the
+ * input value.
  *
- * Hint: Is it correct to check for each node that its key is greater than or
- * equal to the key at its left child and less than or equal to the key at its
- * right child? No. This is a global property. If it applies to every single
- * node, it doesn't mean it apply to the whole tree.
+ * Hint: Perform binary search, keeping some additional state.
  */
 
 #include <cstdio>
@@ -27,25 +25,13 @@ using data_structures::BinaryTreeNode;
 
 using pBSTNode = std::shared_ptr<BinaryTreeNode<int>>;
 
-/**
- * Idea: Use recursion. Keep track of the values that left and right keys
- * are allowed to be greater / smaller than or equal to.
- */
-bool isBSTHelper(const pBSTNode& root, int min, int max)
+pBSTNode FindFirstGreaterThanK(const pBSTNode root, int k)
 {
-    if (root == nullptr) {
-        return true;
-    } else {
-        if (root->data_ < min || root->data_ > max)
-            return false;
-        return isBSTHelper(root->left_, min, root->data_) &&
-            isBSTHelper(root->right_, root->data_, max);
-    }
-}
+    pBSTNode res = nullptr;
+    if (root != nullptr) {
 
-bool isBST(const pBSTNode& root)
-{
-   return isBSTHelper(root, numeric_limits<int>::min(), numeric_limits<int>::max()); 
+    }
+    return res;
 }
 
 int main()
@@ -84,7 +70,5 @@ int main()
     tc1_L->right_       = tc1_M;
 
     tc1_O->right_       = tc1_P;
-    assert(isBST(tc1_A));
-
     return 0;
 }

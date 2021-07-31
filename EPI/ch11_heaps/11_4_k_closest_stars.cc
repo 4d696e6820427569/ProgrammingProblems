@@ -21,6 +21,7 @@
 #include <queue>
 #include <cmath>
 #include <cstdio>
+#include <cassert>
 
 using std::priority_queue;
 using std::vector;
@@ -57,7 +58,7 @@ struct StarAndDistance
 
 float get_dist(const vector<float>& star)
 {
-    return std::sqrtf(star[0] * star[0] + star[1] * star[1] + star[2] * star[2]);
+    return std::sqrt(star[0] * star[0] + star[1] * star[1] + star[2] * star[2]);
 }
 
 vector<vector<float>> k_closest_stars(vector<vector<float>>& stars, int k)
