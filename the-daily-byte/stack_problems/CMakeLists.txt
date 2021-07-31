@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+
+add_executable(validate_characters validate_characters.cc)
+add_executable(compare_keystrokes compare_keystrokes.cc)
+add_executable(remove_adjacent_duplicates remove_adjacent_duplicates.cc)

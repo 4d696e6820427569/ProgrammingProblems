@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.10)
+
+set (INCLUDE_DIR ../data_structures/)
+include_directories(${INCLUDE_DIR})
+
+add_executable(11_1_merge_sorted_files 11_1_merge_sorted_files.cc)
+add_executable(11_3_sort_almost_sorted_array 11_3_sort_almost_sorted_array.cc)
+add_executable(11_4_k_closest_stars 11_4_k_closest_stars.cc)
+add_executable(11_5_compute_median_online_data 11_5_compute_median_online_data.cc)
+add_executable(11_7_stack_with_heap 11_7_stack_with_heap.cc)
+add_executable(11_7_queue_with_heap 11_7_queue_with_heap.cc)

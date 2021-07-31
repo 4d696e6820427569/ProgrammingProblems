@@ -1,0 +1,9 @@
+cmake_minimum_required(VERSION 3.10)
+
+add_executable(6_1_Dutch_flag 6_1_Dutch_flag.cc)
+add_executable(6_6_buy_and_sell_stock_once 6_6_buy_and_sell_stock_once.cc)
+add_executable(6_11_sample_offline_data 6_11_sample_offline_data.cc)
+add_executable(6_17_spiral_ordering 6_17_spiral_ordering.cc)
+add_executable(6_2_increment_int 6_2_increment_int.cc)
+add_executable(6_16_sudoku_checker 6_16_sudoku_checker.cc)
+add_executable(6_5_delete_duplicates_from_sorted_array 6_5_delete_duplicates_from_sorted_array.cc)

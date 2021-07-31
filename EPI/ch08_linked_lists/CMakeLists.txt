@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.10)
+
+set (INCLUDE_DIR ../data_structures/)
+include_directories(${INCLUDE_DIR})
+
+add_executable(8_1_merge_two_sorted_lists 8_1_merge_two_sorted_lists)
+add_executable(8_2_reverse_single_sublist 8_2_reverse_single_sublist.cc)
+add_executable(8_2_reverse_linked_list 8_2_reverse_linked_list.cc)
+add_executable(8_3_test_cyclicity 8_3_test_cyclicity.cc)
+add_executable(8_4_test_overlapping_lists_no_cycle 8_4_test_overlapping_lists_no_cycle.cc)
+add_executable(8_7_remove_kth_last_element 8_7_remove_kth_last_element.cc)
+add_executable(8_10_even_odd_merge 8_10_even_odd_merge.cc)
+add_executable(8_11_test_palindromic 8_11_test_palindromic.cc)

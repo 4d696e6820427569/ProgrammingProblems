@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 3.10)
+
+add_library(SINGLY_LINKED_LIST ../data_structures/singly_linked_node.h ../data_structures/singly_linked_node.cc)
+
+add_executable(contains_cycle contains_cycle.cc)
+target_link_libraries(contains_cycle SINGLY_LINKED_LIST)
+
+add_executable(find_mid_element find_mid_element.cc)
+target_link_libraries(find_mid_element SINGLY_LINKED_LIST)
+
+add_executable(merge_linked_lists merge_linked_lists.cc)
+target_link_libraries(merge_linked_lists SINGLY_LINKED_LIST)
+
+add_executable(remove_n_to_last_node remove_n_to_last_node.cc)
+target_link_libraries(remove_n_to_last_node SINGLY_LINKED_LIST)
+
+add_executable(remove_value remove_value.cc)
+target_link_libraries(remove_value SINGLY_LINKED_LIST)
+
+add_executable(return_start_cycle return_start_cycle.cc)
+target_link_libraries(return_start_cycle SINGLY_LINKED_LIST)
+
+add_executable(reverse_list reverse_list.cc)
+target_link_libraries(reverse_list SINGLY_LINKED_LIST)
+

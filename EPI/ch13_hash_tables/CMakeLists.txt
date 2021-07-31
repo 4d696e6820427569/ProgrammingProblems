@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.10)
+
+set (INCLUDE_DIR ../data_structures/)
+include_directories(${INCLUDE_DIR})
+
+add_executable(13_2_anonymous_letter_constructible 13_2_anonymous_letter_constructible.cc)
+add_executable(13_3_ISBN_cache 13_3_ISBN_cache.cc)
+add_executable(13_4_compute_LCA 13_4_compute_LCA.cc)
+add_executable(13_6_find_nearest_repeated_entries_in_array 13_6_find_nearest_repeated_entries_in_array.cc)
+add_executable(13_7_find_the_smallest_subarray_covering_all_values 13_7_find_the_smallest_subarray_covering_all_values.cc)
+add_executable(13_10_len_of_longest_contained_interval 13_10_len_of_longest_contained_interval.cc)

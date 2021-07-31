@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.10)
+
+set (INCLUDE_DIR ../data_structures/)
+include_directories(${INCLUDE_DIR})
+
+add_executable(17_1_number_of_score_combinations 17_1_number_of_score_combinations.cc)

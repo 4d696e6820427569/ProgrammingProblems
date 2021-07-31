@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.10)
+
+set (INCLUDE_DIR ../data_structures/)
+include_directories(${INCLUDE_DIR})
+
+add_executable(12_1_search_sorted_array_for_first_occurence 12_1_search_sorted_array_for_first_occurence.cc)
+add_executable(12_4_compute_int_sqrt 12_4_compute_int_sqrt.cc)
+add_executable(12_5_compute_real_sqrt 12_5_compute_real_sqrt.cc)
+add_executable(12_3_search_cyclically_sorted_array 12_3_search_cyclically_sorted_array.cc)
+add_executable(12_8_kth_largest_element 12_8_kth_largest_element.cc)

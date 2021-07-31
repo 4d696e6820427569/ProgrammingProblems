@@ -1,0 +1,85 @@
+/**
+ * EPI Chapter 14 Sorting
+ *
+ * 07/31/2021
+ * 14.6 Compute the union of intervals.
+ *
+ * In this problem we consider sets of intervals with integers endpoints;
+ * the intervals may be open or closed at either end. We want to compute the
+ * union of the intervals in such sets.
+ *
+ * Design an algorithm that takes as input a set of intervals, and outputs their
+ * union expressed as a set of disjoint intervals.
+ *
+ * Hint: Do a case analysis.
+ */
+
+#include <vector>
+#include <cassert>
+#include <algorithm>
+
+using std::vector;
+using std::max;
+using std::min;
+using std::sort;
+
+struct Interval
+{
+    struct EndPoint
+    {
+        bool operator==(const EndPoint& ep) const
+        {
+            return val == ep.val && isClosed == ep.isClosed;
+        }
+        int val;
+        bool isClosed;
+    };
+
+    bool operator<(const Interval& i) const
+    {
+        return true;
+    }
+
+    bool operator==(const Interval& i) const
+    {
+        return start == i.start && end == i.end;
+    }
+
+    EndPoint start, end;
+};
+
+vector<Interval> UnionOfIntervals(vector<Interval> intervals)
+{
+    vector<Interval> res;
+    sort(intervals.begin(), intervals.end());
+    
+    return res;
+}
+
+int main()
+{
+    Interval i1 = {{0, false}, {3, false}};
+    Interval i2 = {{1, true}, {1, true}};
+    Interval i3 = {{3, true}, {4, false}};
+    Interval i4 = {{2, true}, {4, true}};
+    Interval i5 = {{5, true}, {7, false}};
+    Interval i6 = {{7, true}, {8, false}};
+    Interval i7 = {{8, true}, {11, false}};
+    Interval i8 = {{9, false}, {11, true}};
+    Interval i9 = {{12, true}, {14, true}};
+    Interval i10 = {{12, false}, {16, true}};
+    Interval i11 = {{13, false}, {15, false}};
+    Interval i12 = {{16, false}, {17, false}};
+
+    vector<Interval> tc1 = {i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12};
+
+    Interval i_res1 = {{0, false}, {4, true}};
+    Interval i_res2 = {{5, true}, {11, true}};
+    Interval i_res3 = {{12, true}, {17, false}};
+
+    vector<Interval> tc1_res{i_res1, i_res2, i_res3};
+
+    assert(UnionOfIntervals(tc1) == tc1_res);
+
+    return 0;
+}
