@@ -7,3 +7,5 @@ add_executable(14_1_compute_intersection_two_sorted_arrays 14_1_compute_intersec
 add_executable(14_2_merge_two_sorted_arrays 14_2_merge_two_sorted_arrays.cc)
 add_executable(14_4_render_calendar 14_4_render_calendar.cc)
 add_executable(14_5_merge_intervals 14_5_merge_intervals.cc)
+add_executable(14_6_union_of_intervals 14_6_union_of_intervals.cc)
+add_executable(14_9_fast_sorting_lists 14_9_fast_sorting_lists.cc)

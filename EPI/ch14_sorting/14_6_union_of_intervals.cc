@@ -17,11 +17,15 @@
 #include <vector>
 #include <cassert>
 #include <algorithm>
+#include <cstdio>
 
 using std::vector;
 using std::max;
 using std::min;
 using std::sort;
+
+struct Interval;
+void PrintIntervals(const vector<Interval>&);
 
 struct Interval
 {
@@ -37,7 +41,11 @@ struct Interval
 
     bool operator<(const Interval& i) const
     {
-        return true;
+        if (start.val != i.start.val) {
+            return start.val < i.start.val;
+        } else {
+            return start.isClosed && !i.start.isClosed;
+        }
     }
 
     bool operator==(const Interval& i) const
@@ -48,12 +56,72 @@ struct Interval
     EndPoint start, end;
 };
 
+/**
+ * Idea: Sort the intervals based on the starting point. Do a case by case
+ * merging.
+ *
+ * 2 intervals intersect iff interval1.end >= interval2.start
+ *
+ * Time complexity: O(nlogn)
+ * Space complexity: O(n)
+ */
 vector<Interval> UnionOfIntervals(vector<Interval> intervals)
 {
     vector<Interval> res;
     sort(intervals.begin(), intervals.end());
+
+    // When do we know 2 intervals intersect?
+    // When interval1.end >= interval2.start
+    // If interval1.end == interval2.start && (interval1.end.isClosed || interval2.start.isClosed)
+    // MergeInterval will have
+    // start = min(interval1.start, interval2.start)
+    // start.isClosed = interval1.start < interval2.start ? interval1.isClosed : interval2.isClosed.
+    //
+    // end = max(interval1.end, interval2.end)
+    // end.isClosed = interval1.end > interval2.end ? interval1.isClosed : interval2.isClosed.
+    //
+    //
+    //
+
+    //PrintIntervals(intervals);
     
+    for (auto interval : intervals) {
+        if (res.empty() || res.back().end.val < interval.start.val) {
+            // Result interval list is empty or the previous and the next
+            // interval don't intersect.
+            res.emplace_back(interval);
+        } else {
+            // Mergeable.
+            Interval& prev = res.back();
+
+            // If they share same start point.
+            if (prev.start.val == interval.start.val) {
+                prev.start.isClosed |= interval.start.isClosed;
+            }
+            
+            
+            if (prev.end.val <= interval.end.val) {
+                if (prev.end.val == interval.end.val)
+                    prev.end.isClosed |= interval.end.isClosed;
+                else
+                    prev.end.isClosed = interval.end.isClosed;
+                prev.end.val = interval.end.val;
+            }
+        }
+
+        //PrintIntervals(res);
+    }
+
     return res;
+}
+
+void PrintIntervals(const vector<Interval>& intervals)
+{
+    for (const auto& interval : intervals) {
+        printf("%d %d %d %d\n", interval.start.val, interval.start.isClosed,
+                interval.end.val, interval.end.isClosed);
+    }
+    printf("\n");
 }
 
 int main()
@@ -78,8 +146,7 @@ int main()
     Interval i_res3 = {{12, true}, {17, false}};
 
     vector<Interval> tc1_res{i_res1, i_res2, i_res3};
-
     assert(UnionOfIntervals(tc1) == tc1_res);
 
     return 0;
-}
+ }
