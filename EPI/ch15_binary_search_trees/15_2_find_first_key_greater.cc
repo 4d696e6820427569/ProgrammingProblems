@@ -25,14 +25,59 @@ using data_structures::BinaryTreeNode;
 
 using pBSTNode = std::shared_ptr<BinaryTreeNode<int>>;
 
+/**
+ * Idea: Perform binary search. Record possible candidate whenever
+ * out tree pointer's value is less than the value k.
+ *
+ * Time complexity: O(h)
+ * Space complexity: O(1)
+ */
 pBSTNode FindFirstGreaterThanK(const pBSTNode root, int k)
 {
     pBSTNode res = nullptr;
-    if (root != nullptr) {
+    pBSTNode candidate = nullptr;
+    res = root;
 
+    while (res != nullptr) {
+        if (k < res->data_) {
+            candidate = res;
+            res = res->left_;                
+        } else if (k >= res->data_) {
+            res = res->right_;
+        }
     }
-    return res;
+    return candidate;
 }
+
+/**
+ * Variant: Write a program that takes as input a BST and a value, and returns
+ * the node whose key equals the input value and appears first in an inorder
+ * traversal of the BST. Note that such BST can have duplicate values.
+ *
+ * Idea: If two keys are equal, prioritize leftest & deepest node.
+ *
+ * Time complexity: O(h)
+ * Space complexity: O(1)
+ */
+pBSTNode FirstOccurrenceInBST(const pBSTNode& root, int k)
+{
+    pBSTNode candidate(nullptr);
+    pBSTNode pIter(root);
+
+    while (pIter != nullptr) {
+        if (k == pIter->data_) {
+            candidate = pIter;
+            pIter = pIter->left_;
+        } else if (k < pIter->data_) {
+            pIter = pIter->left_;
+        } else {
+            pIter = pIter->right_;
+        }
+    }
+
+    return candidate;
+}
+
 
 int main()
 {
@@ -70,5 +115,39 @@ int main()
     tc1_L->right_       = tc1_M;
 
     tc1_O->right_       = tc1_P;
+
+    assert(FindFirstGreaterThanK(tc1_A, 23)->data_ == 29);
+
+
+    // Testing variants.
+    pBSTNode tc_A       (make_shared<BinaryTreeNode<int>>(108));
+    pBSTNode tc_B       (make_shared<BinaryTreeNode<int>>(108));
+    pBSTNode tc_C       (make_shared<BinaryTreeNode<int>>(-10));
+    pBSTNode tc_D       (make_shared<BinaryTreeNode<int>>(-14));
+    pBSTNode tc_E       (make_shared<BinaryTreeNode<int>>(2));
+    pBSTNode tc_F       (make_shared<BinaryTreeNode<int>>(108));
+    pBSTNode tc_G       (make_shared<BinaryTreeNode<int>>(285));
+    pBSTNode tc_H       (make_shared<BinaryTreeNode<int>>(243));
+    pBSTNode tc_I       (make_shared<BinaryTreeNode<int>>(285));
+    pBSTNode tc_J       (make_shared<BinaryTreeNode<int>>(401));
+
+    tc_A->left_         = tc_B;
+    tc_A->right_        = tc_G;
+
+    tc_B->left_         = tc_C;
+    tc_B->right_        = tc_F;
+    
+    tc_C->left_         = tc_D;
+    tc_C->right_        = tc_E;
+
+    tc_G->left_         = tc_H;
+    tc_G->right_        = tc_I;
+
+    tc_I->right_        = tc_J;
+
+    assert(FirstOccurrenceInBST(tc_A, 108) == tc_B);
+    assert(FirstOccurrenceInBST(tc_A, 285) == tc_G);
+    assert(FirstOccurrenceInBST(tc_A, 143) == nullptr);
+
     return 0;
 }
