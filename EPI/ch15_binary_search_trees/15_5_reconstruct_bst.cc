@@ -59,6 +59,15 @@ void Preorder(const pBSTNode& tree, vector<int>& preorder)
     }
 }
 
+void Postorder(const pBSTNode& tree, vector<int>& postorder)
+{
+    if (tree != nullptr) {
+        Postorder(tree->left_, postorder);
+        Postorder(tree->right_, postorder);
+        postorder.emplace_back(tree->data_);
+    }
+}
+
 bool Equals(const pBSTNode& tree1, const pBSTNode& tree2)
 {
     if (tree1 == nullptr && tree2 == nullptr) {
@@ -163,6 +172,35 @@ pBSTNode RebuildBSTFromPreorderEPI(const vector<int>& preorder)
             numeric_limits<int>::min(), numeric_limits<int>::max(), &root_idx);
 }
 
+/**
+ * Variant: Rebuild BST from postorder traversal data using the same idea.
+ *
+ *
+ */
+pBSTNode RebuildBSTFromPostorderOnValueRange(const vector<int>& postorder,
+        int lower_bound, int upper_bound, int* root_idx_ptr)
+{
+    int& root_idx = *root_idx_ptr;
+    if (root_idx < 0) return nullptr;
+
+    int root = postorder[root_idx];
+    if (root < lower_bound || root > upper_bound) return nullptr;
+    root_idx--;
+
+    auto right_subtree = RebuildBSTFromPostorderOnValueRange(postorder,
+            root, upper_bound, &root_idx);
+    auto left_subtree = RebuildBSTFromPostorderOnValueRange(postorder,
+            lower_bound, root, &root_idx);
+    return make_shared<BinaryTreeNode<int>>(root, left_subtree, right_subtree);
+}
+
+pBSTNode RebuildBSTFromPostorder(const vector<int>& postorder)
+{
+    int root_idx = static_cast<int>(postorder.size()-1);
+    return RebuildBSTFromPostorderOnValueRange(postorder, 
+            numeric_limits<int>::min(), numeric_limits<int>::max(), &root_idx);
+}
+
 int main()
 {
     pBSTNode tc1_A      (make_shared<BinaryTreeNode<int>>(19));
@@ -201,13 +239,24 @@ int main()
     tc1_O->right_       = tc1_P;
 
     vector<int> tc1_preorder{19, 7, 3, 2, 5, 11, 17, 13, 43, 23, 37, 29, 31, 41, 47, 53};
-    pBSTNode tc1_res = RebuildBSTFromPreorder(tc1_preorder);
+    //pBSTNode tc1_res = RebuildBSTFromPreorder(tc1_preorder);
+    pBSTNode tc1_res = RebuildBSTFromPreorderEPI(tc1_preorder);
 
     PrintVect(tc1_preorder);
-
     vector<int> tc1_res_preorder;
     Preorder(tc1_res, tc1_res_preorder);
     PrintVect(tc1_res_preorder);
+    //assert(Equals(tc1_A, tc1_res));
+
+    vector<int> tc1_postorder{2, 5, 3, 13, 17, 11, 7, 3, 31, 29, 41, 37, 23, 53, 47, 43, 19};
+    pBSTNode tc1_res_post = RebuildBSTFromPostorder(tc1_postorder);
+    PrintVect(tc1_postorder);
+
+    vector<int> tc1_res_post_vect;
+    Postorder(tc1_res_post, tc1_res_post_vect);
+    PrintVect(tc1_res_post_vect);
+    //assert(Equals(tc1_A, tc1_res_post));
+
 
     return 0;
 }
