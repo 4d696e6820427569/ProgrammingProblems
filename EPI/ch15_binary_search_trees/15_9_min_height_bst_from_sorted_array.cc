@@ -72,24 +72,22 @@ int GetHeight(const pBSTNode& root)
  * Time complexity: O(n)
  * Space complexity: O(1)
  */
+pBSTNode BuildMinHeightBSTFromSortedArrayHelper(const vector<int>& A,
+        size_t start, size_t end)
+{
+    if (start > end) return nullptr;
+    size_t root_idx = start + (end - start) / 2;
+    return make_shared<BinaryTreeNode<int>>(
+        A[root_idx],
+        BuildMinHeightBSTFromSortedArrayHelper(A, start, root_idx-1),
+        BuildMinHeightBSTFromSortedArrayHelper(A, root_idx+1, end)
+            );
+}
 pBSTNode BuildMinHeightBSTFromSortedArray(const vector<int>& A)
 {
-    int n = static_cast<int>(A.size());
-    int root_idx = n / 2;
-    pBSTNode root(make_shared<BinaryTreeNode<int>>(A[root_idx]));
-    pBSTNode pTmp(root);
-    for (int i = root_idx - 1; i >= 0; i--) {
-        pTmp->left_ = make_shared<BinaryTreeNode<int>>(A[i]);
-        pTmp = pTmp->left_;
-    }
-
-    pTmp = root;
-    for (int i = root_idx + 1; i < n; i++) {
-        pTmp->right_ = make_shared<BinaryTreeNode<int>>(A[i]);
-        pTmp = pTmp->right_;
-    }
-    
-    return root;
+    return BuildMinHeightBSTFromSortedArrayHelper(
+            A, 0, A.size() - 1
+            );
 }
 
 int main()

@@ -90,13 +90,77 @@ public:
     bool
     Delete(T data)
     {
-        return false;
+        shared_ptr<BinaryTreeNode<T>> pTmp(root_);
+        shared_ptr<BinaryTreeNode<T>> pParent(nullptr);
+
+        while (pTmp != nullptr && pTmp->data_ != data) {
+            pParent = pTmp;
+            if (data < pTmp->data_) {
+                pTmp = pTmp->left_;
+            } else {
+                pTmp = pTmp->right_;
+            }
+        }
+
+        // Can't find that node.
+        if (pTmp == nullptr) return false;
+
+        shared_ptr<BinaryTreeNode<T>> found_node = pTmp;
+
+        if (found_node->right_ != nullptr) {
+            // Find the minimum on the right subtree. i.e. the successor.
+            shared_ptr<BinaryTreeNode<T>> successor = found_node->right_;
+            shared_ptr<BinaryTreeNode<T>> successor_parent = found_node;
+
+            while (successor->left != nullptr) {
+                successor_parent = successor;
+                successor = successor->left_;
+            }
+
+            // Set the found node's data to its successor's data.
+            found_node->data_ = successor->data_;
+
+            // Moves links to erase the successor.
+            if (successor_parent->left_ == successor) {
+                successor_parent->left_ = successor->right_;
+            } else {
+                successor_parent->right_ = successor->right_;
+            }
+
+        } else {
+            // Update root_ link if needed.
+            if (root_ == found_node) {
+                root_ = found_node->left_;
+            } else {
+                if (pParent->left_ == found_node) {
+                    pParent->left_ = found_node->left_;
+                } else {
+                    pParent->right_ = found_node->left_;
+                }
+            }
+        }
+        return true;
     }
 
     size_t 
     Size() const
     {
         return n_;
+    }
+
+    shared_ptr<BinaryTreeNode<T>> Find(T data)
+    {
+        shared_ptr<BinaryTreeNode<T>> pTmp(root_);
+
+        while (pTmp != nullptr && pTmp->data_ != data) {
+            if (data < pTmp->data_) {
+                pTmp = pTmp->left_;
+            } else {
+                pTmp = pTmp->right_;
+            }
+        }
+
+        return pTmp;
     }
 
     bool 
