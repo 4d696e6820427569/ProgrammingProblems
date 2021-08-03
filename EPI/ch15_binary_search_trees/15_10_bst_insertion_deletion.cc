@@ -72,5 +72,6 @@ int main()
     PrintVect(tree1_preorder_res);
     printf("Postorder: ");
     PrintVect(tree1_postorder_res);
+
     return 0;
 }

@@ -65,9 +65,9 @@ public:
 
             while (pTmp != nullptr) {
                 pParent = pTmp;
-                if (data < root_->data_) {
+                if (data < pTmp->data_) {
                     pTmp = pTmp->left_;
-                } else if (data > root_->data_) {
+                } else if (data > pTmp->data_) {
                     pTmp = pTmp->right_;
                 } else {
                     // Duplicate keys.
@@ -84,12 +84,13 @@ public:
             n_++;
             return make_pair(new_node, true);
         }
+        return make_pair(nullptr, false);
     }
 
     bool
     Delete(T data)
     {
-
+        return false;
     }
 
     size_t 
