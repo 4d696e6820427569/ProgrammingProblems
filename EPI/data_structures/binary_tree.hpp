@@ -76,6 +76,7 @@ public:
             }
 
             shared_ptr<BinaryTreeNode<T>> new_node(make_shared<BinaryTreeNode<T>>(data));
+            new_node->parent_ = pParent;
             if (pParent->data_ < data) {
                 pParent->right_ = new_node;
             } else if (pParent->data_ > data) {
@@ -142,13 +143,53 @@ public:
         return true;
     }
 
+    shared_ptr<BinaryTreeNode<T>>
+    FindMin() const
+    {
+        return FindMin(root_);
+    }
+
+    shared_ptr<BinaryTreeNode<T>>
+    FindMax() const
+    {
+        return FindMax(root_);
+    }
+
+    shared_ptr<BinaryTreeNode<T>>
+    FindSuccessor(T data)
+    {
+        shared_ptr<BinaryTreeNode<T>> key_node = Find(data);
+        shared_ptr<BinaryTreeNode<T>> successor(nullptr);
+        if (key_node != nullptr) {
+            if (key_node->right_ != nullptr) {
+                successor = FindMin(key_node->right_);
+            } else {
+                shared_ptr<BinaryTreeNode<T>> pParent = key_node->parent;
+                while (pParent != nullptr && pParent->right_ == successor) {
+                    successor = pParent;
+                    pParent = pParent->parent;
+                }
+                successor = pParent;
+            }
+        }
+
+        return successor;
+    }
+
+    shared_ptr<BinaryTreeNode<T>>
+    FindPredecessor(T data)
+    {
+
+    }
+
     size_t 
     Size() const
     {
         return n_;
     }
 
-    shared_ptr<BinaryTreeNode<T>> Find(T data)
+    shared_ptr<BinaryTreeNode<T>> 
+    Find(T data) const
     {
         shared_ptr<BinaryTreeNode<T>> pTmp(root_);
 
@@ -213,6 +254,24 @@ private:
             PreorderHelper(node->left_, preorder);
             PreorderHelper(node->right_, preorder);
         }
+    }
+
+    shared_ptr<BinaryTreeNode<T>> FindMin(const shared_ptr<BinaryTreeNode<T>>& tree)
+    {
+        shared_ptr<BinaryTreeNode<T>> min_node(tree);
+        while (min_node->left_ != nullptr) {
+            min_node = min_node->left_;
+        }
+        return min_node;
+    }
+
+    shared_ptr<BinaryTreeNode<T>> FindMax(const shared_ptr<BinaryTreeNode<T>>& tree)
+    {
+        shared_ptr<BinaryTreeNode<T>> max_node(tree);
+        while (max_node->right_ != nullptr) {
+            max_node = max_node->right_;
+        }
+        return max_node;
     }
 
     shared_ptr<BinaryTreeNode<T>> root_;
