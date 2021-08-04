@@ -45,6 +45,32 @@ vector<vector<int>> Permutations(vector<int>& A)
     return res;
 }
 
+/**
+ * Variant: Generate permutations when the input array may have duplicates.
+ * You should not repeat any permutations.
+ */
+void DirectedPermutationsVariant(vector<vector<int>>& res,
+        vector<int> A, int idx)
+{
+    if (idx == static_cast<int>(A.size())) {
+        res.emplace_back(A);
+    } else {
+        for (size_t i = idx; i < A.size(); i++) {
+            if (A[i] == A[idx] && i != idx)
+                continue;
+            swap(A[i], A[idx]);
+            DirectedPermutationsVariant(res, A, idx + 1);
+        }
+    }
+}
+
+vector<vector<int>> PermutationsVariant(vector<int>& A)
+{
+    vector<vector<int>> res;
+    DirectedPermutationsVariant(res, A, 0);
+    return res;
+}
+
 int main()
 {
     vector<int> tc1{2, 3, 5, 7};
