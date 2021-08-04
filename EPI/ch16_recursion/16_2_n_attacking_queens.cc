@@ -17,9 +17,11 @@
 #include <string>
 #include <cstdio>
 #include <cassert>
+#include <set>
 
 using std::vector;
 using std::string;
+using std::set;
 
 
 void PrintVect(const vector<string>& v)
@@ -64,10 +66,10 @@ bool isAttacked(const vector<string>& conf, int row, int col)
     return false;
 }
 
-void backtrack(vector<vector<string>>& res, vector<string>& cur_conf, int queens_left)
+void backtrack(set<vector<string>>& res, vector<string>& cur_conf, int queens_left)
 {
     if (queens_left == 0) {
-        res.emplace_back(cur_conf);
+        res.emplace(cur_conf);
     } else {
         int n = cur_conf.size();
         for (int i = 0; i < n; i++) {
@@ -84,12 +86,13 @@ void backtrack(vector<vector<string>>& res, vector<string>& cur_conf, int queens
 
 vector<vector<string>> solveNQueens(int n)
 {
-    vector<vector<string>> res;
+    set<vector<string>> res_set;
     string init_row(n, '.');
     vector<string> conf;
     for (int i = 0; i < n; i++)
         conf.emplace_back(init_row);
-    backtrack(res, conf, n);
+    backtrack(res_set, conf, n);
+    vector<vector<string>> res(res_set.begin(), res_set.end());
     return res;
 }
 
