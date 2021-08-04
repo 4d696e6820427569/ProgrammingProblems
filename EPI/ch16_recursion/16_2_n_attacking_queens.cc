@@ -93,6 +93,48 @@ vector<vector<string>> solveNQueens(int n)
     return res;
 }
 
+
+bool IsValidPlacement(const vector<int>& col_placement)
+{
+    int row_idx = static_cast<int>(col_placement.size() - 1);
+    for (int i = 0; i < row_idx; i++) {
+        int diff = abs(col_placement[i] - col_placement[row_idx]);
+        if (diff == 0 || diff == row_idx - i)
+            return false;
+    }
+    return true;
+}
+
+
+void SolveNQueensEPI(int n, int row, vector<int>& col_placement, vector<vector<int>>& res)
+{
+    if (row == n) {
+        res.emplace_back(col_placement);
+    } else {
+        for (int col = 0; col < n; col++) {
+            col_placement.emplace_back(col);
+            if (IsValidPlacement(col_placement)) {
+                SolveNQueensEPI(n, row + 1, col_placement, res);
+            }
+            col_placement.pop_back();
+        }
+    }
+}
+
+void GenerateSolutions(const vector<vector<int>>& col_placements, 
+        vector<vector<string>>& solutions)
+{
+
+}
+
+vector<vector<int>> NQueens(int n)
+{
+    vector<vector<int>> res;
+    vector<int> col_placement;
+    SolveNQueensEPI(n, 0, col_placement, res);
+    return res;
+}
+
 int main()
 {
     PrintMatrix(solveNQueens(4));
