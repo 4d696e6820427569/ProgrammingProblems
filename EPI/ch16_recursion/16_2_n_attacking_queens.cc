@@ -38,6 +38,9 @@ void PrintMatrix(const vector<vector<string>>& m)
     printf("\n");
 }
 
+/**
+ * My Brute Force solution. TLE due to repeated states.
+ */
 bool isAttacked(const vector<string>& conf, int row, int col)
 {
     int n = static_cast<int>(conf.size());
@@ -97,11 +100,23 @@ vector<vector<string>> solveNQueens(int n)
 }
 
 
+
+/**
+ * Solution from EPI: The idea is to use only a single array to represent
+ * the chess board since we place the queens on distinct rows. So now we only
+ * need to check for columns and diagonals.
+ */
 bool IsValidPlacement(const vector<int>& col_placement)
 {
     int row_idx = static_cast<int>(col_placement.size() - 1);
     for (int i = 0; i < row_idx; i++) {
         int diff = abs(col_placement[i] - col_placement[row_idx]);
+
+        // diff = 0 means same column.
+        // diff = row_idx - i means same diagonal?
+        // Because row_idx - i is the row difference and diff here is the
+        // column difference. If they are the same then we violate the
+        // placement diagonally.
         if (diff == 0 || diff == row_idx - i)
             return false;
     }
@@ -127,7 +142,15 @@ void SolveNQueensEPI(int n, int row, vector<int>& col_placement, vector<vector<i
 void GenerateSolutions(const vector<vector<int>>& col_placements, 
         vector<vector<string>>& solutions)
 {
-
+    if (col_placements.empty()) return;
+    int n = static_cast<int>(col_placements[0].size());
+    for (const auto& col_placement : col_placements) {
+        vector<string> solution(n, string(n, '.'));
+        for (size_t i = 0; i < col_placement.size(); i++) {
+            solution[i][col_placement[i]] = 'Q';
+        }
+        solutions.emplace_back(solution);
+    }
 }
 
 vector<vector<int>> NQueens(int n)
@@ -140,6 +163,8 @@ vector<vector<int>> NQueens(int n)
 
 int main()
 {
-    PrintMatrix(solveNQueens(4));
+    vector<vector<string>> tc1_res;
+    GenerateSolutions(NQueens(4), tc1_res);
+    PrintMatrix(tc1_res);
     return 0;
 }
