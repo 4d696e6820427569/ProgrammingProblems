@@ -18,6 +18,7 @@
 
 #include <vector>
 #include <stack>
+#include <cstdio>
 
 using std::vector;
 using std::stack;
