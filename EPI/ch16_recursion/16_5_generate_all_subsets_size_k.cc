@@ -14,6 +14,7 @@
  */
 
 #include <vector>
+#include <cstdio>
 
 using std::vector;
 

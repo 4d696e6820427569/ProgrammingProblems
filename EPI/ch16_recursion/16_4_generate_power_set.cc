@@ -16,10 +16,12 @@
 #include <cmath>
 #include <string>
 #include <unordered_set>
+#include <algorithm>
 
 using std::string;
 using std::unordered_set;
 using std::vector;
+using std::sort;
 
 void PrintMatrix(const vector<vector<int>>& m)
 {
