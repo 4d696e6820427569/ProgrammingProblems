@@ -33,7 +33,7 @@ int NumCombinationsForFinalScore(int final_score, const vector<int>& individual_
     // Recurrence formula:
     // dp(n) = dp(n - ips[0]) + dp(n - ips[1]) + ... + dp(n - ips[n-1])
     // dp[0] = 1. Because there's always 1 way to make play to reach the score
-    // of 0.
+    // of 0, which is not make a play at all.
     vector<int> dp(final_score+1, 0);
     dp[0] = 1;
     
@@ -44,12 +44,14 @@ int NumCombinationsForFinalScore(int final_score, const vector<int>& individual_
             }
         }
     }
+
     return dp[final_score];
 }
 
 int main()
 {
     vector<int> tc1{2, 4, 7};
+    printf("%d\n", NumCombinationsForFinalScore(12, tc1));
     assert(NumCombinationsForFinalScore(12, tc1) == 4);
     return 0;
 }
