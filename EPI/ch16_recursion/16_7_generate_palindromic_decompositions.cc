@@ -70,7 +70,12 @@ vector<vector<string>> PalindromePartitioning(const string& s)
 int main()
 {
     string tc1("aab");
-    vector<vector<string>> tc1_res =  PalindromePartitioning(tc1);
+    vector<vector<string>> tc1_res = PalindromePartitioning(tc1);
     PrintMatrix(tc1_res);
+
+    string tc2("0204451881");
+    vector<vector<string>> tc2_res = PalindromePartitioning(tc2);
+    PrintMatrix(tc2_res);
+
     return 0;
 }
