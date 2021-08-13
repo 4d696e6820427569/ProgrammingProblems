@@ -25,12 +25,20 @@
 #include <string>
 #include <queue>
 #include <cassert>
+#include <iostream>
 
 using std::unordered_set;
 using std::vector;
 using std::queue;
 using std::string;
 
+void PrintVector(const vector<string>& v)
+{
+    for (const auto& e : v) {
+        std::cout << e << " ";
+    }
+    std::cout << "\n";
+}
 
 /**
  * Idea: Treat every string in the dictionary as a vertex in a graph.
@@ -56,34 +64,34 @@ bool differOneChar(const string& s, const string& t)
 
 int TransformString(unordered_set<string>& D, const string& s, const string& t)
 {
-    vector<string> path;
+    vector<string> path{s};
 
-    queue<string> q;
+    queue<vector<string>> q;
     
-    q.emplace(s);
+    q.emplace(path);
 
     unordered_set<string> visited{s};
 
     D.erase(s);
 
-    int steps = 0;
-
     while (!q.empty()) {
-        string curr = q.front();
+        vector<string> p = q.front();
+        string curr = p.back();
         q.pop();
 
         if (curr == t) {
-            return steps;
+            PrintVector(p);
+            return static_cast<int>(p.size());
         }
-
-        steps++;
 
         // Get all possible strings in the set that differ in only 1 character.
         // Check if it's already visited. If it's not, add it to the queue.
         for (const string& str : D) {
             if (visited.count(str) == 0 && differOneChar(str, curr)) {
                 visited.emplace(str);
-                q.emplace(str);
+                vector<string> new_path{p};
+                new_path.emplace_back(str);
+                q.emplace(new_path);
             }
         }
     }
