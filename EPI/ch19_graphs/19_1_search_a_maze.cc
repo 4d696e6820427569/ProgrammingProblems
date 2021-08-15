@@ -19,9 +19,12 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
+#include <cstdio>
 
 using std::vector;
 using std::string;
+using std::find;
 
 //typedef enum { WHITE, BLACK } Color;
 //
@@ -49,8 +52,10 @@ struct Coordinate
 void PrintMaze(const vector<vector<Color>>& maze, const Coordinate& start, const Coordinate& end,
         const vector<Coordinate>& path)
 {
-    for (int i = 0; i < maze.size(); i++) {
-        for (int j = 0; j < maze.size(); j++) {
+    int n = static_cast<int>(maze.size());
+    int m = static_cast<int>(maze[0].size());
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
             Coordinate curr{i, j};
             if (!path.empty() 
                     && find(cbegin(path), cend(path), Coordinate{i, j}) != path.cend()

@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <vector>
+#include <cstdio>
 #include <algorithm>
 
 using std::sort;
