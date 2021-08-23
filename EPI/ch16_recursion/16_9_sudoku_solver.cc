@@ -1,7 +1,7 @@
 /**
  * EPI Chapter 16 Recursion
  *
- * 16.9 Implementa a Sudoku solver.
+ * 16.9 Implement a Sudoku solver.
  *
  * Implement a Sudoku solver.
  *
