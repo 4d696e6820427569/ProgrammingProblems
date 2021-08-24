@@ -28,33 +28,33 @@ bool DirectedFindWords(vector<vector<char>>& board, const string& word,
             Constraints: The same letter cell may not be used more than once in a word.
             Goal: Match all possible words.
         */
-        if (cur_word == word) {
-            return true;
-        } else {
-            int m = board.size();
-            int n = board[0].size();
+    if (cur_word == word) {
+        return true;
+    } else {
+        int m = board.size();
+        int n = board[0].size();
             
-            if (row < 0 || row >= m || col < 0 || col >= n || board[row][col] == '.' ||
-                letter_idx >= word.size() || board[row][col] != word[letter_idx])
-                return false;
-
-            char matching_char = board[row][col];
-            board[row][col] = '.';
-            cur_word += matching_char;
-            int d[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-            for (int k = 0; k < 4; k++) {
-                if (DirectedFindWords(board, word, cur_word, row + d[k][0],
-                                     col + d[k][1], letter_idx + 1))
-                {
-                    return true;
-                }
-                cur_word.pop_back();
-                board[row][col] = matching_char;
-            }
-            
+        if (row < 0 || row >= m || col < 0 || col >= n || board[row][col] == '.' ||
+            letter_idx >= word.size() || board[row][col] != word[letter_idx])
             return false;
+
+        char matching_char = board[row][col];
+        board[row][col] = '.';
+        cur_word += matching_char;
+        int d[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        for (int k = 0; k < 4; k++) {
+            if (DirectedFindWords(board, word, cur_word, row + d[k][0],
+                                     col + d[k][1], letter_idx + 1))
+            {
+                return true;
+            }
+            cur_word.pop_back();
+            board[row][col] = matching_char;
         }
+            
+        return false;
     }
+}
     
 vector<string> findWords(vector<vector<char>>& board, vector<string>& words) {
     vector<string> res;

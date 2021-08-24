@@ -24,6 +24,11 @@ const array<array<int, 2>, 8> kDirections{{
     {0, 1}, {0, -1}, {-1, 0}, {1, 0}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1}
 }};
 
+/**
+ * Time complexity: O(PD) where P is the number of points and D is the maximum
+ *  distance between any 2 points.
+ * Space complexity: O(D) because there are at most D points on the BFS queue.
+ */
 int BFS(const vector<int>& p1, const vector<int>& p2)
 {
     queue<vector<vector<int>>> q;
