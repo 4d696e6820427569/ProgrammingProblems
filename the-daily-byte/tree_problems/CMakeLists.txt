@@ -49,3 +49,5 @@ add_executable(same_leaves same_leaves.cc)
 add_executable(symmetrical_tree symmetrical_tree.cc)
 
 add_executable(sum_left_leaves sum_left_leaves.cc)
+
+add_executable(average average.cc)
