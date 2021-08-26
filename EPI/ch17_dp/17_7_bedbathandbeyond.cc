@@ -21,10 +21,26 @@
 #include <unordered_set>
 #include <vector>
 #include <string>
+#include <cstdio>
+#include <algorithm>
 
 using std::unordered_set;
 using std::string;
 using std::vector;
+using std::reverse;
+
+void PrintWords(const vector<string>& arr)
+{
+    for (const auto& e : arr)
+        printf("%s\n", e.c_str());
+}
+
+void PrintVect(const vector<int>& arr)
+{
+    for (const auto& e : arr)
+        printf("%d ", e);
+    printf("\n");
+}
 
 /**
  * The BF solution: We can try to check if the given name is a substring of
@@ -43,11 +59,61 @@ using std::vector;
 vector<string> DecomposeIntoDictionaryWords(const string& domain, 
         const unordered_set<string>& dictionary)
 {
-    vector<string> res;
-    return res;
+    // When the algorithm finishes, last_length[i] != -1 indicates
+    // domain.substr(0, i+1) has a valid decomposition, and the length of
+    // the last string in the decomposition is last_length[i].
+    vector<int> last_length(domain.size(), -1);
+    for (int i = 0; i < domain.size(); i++) {
+        // If domain.substr(0, i + 1) is a dictionary word, set last_length[i]
+        // to the length of that word.
+        if (dictionary.find(domain.substr(0, i + 1)) != dictionary.cend()) {
+            last_length[i] = i + 1;
+        }
+        printf("Current i: %d\n", i);
+        PrintVect(last_length);
+        // If last_length[i] = -1 look for j < i such that domain.substr(0. j+1)
+        // has a valid decomposition and domain.substr(j+1,i+1) is a dictionary
+        // word. If so, record the length of that word in last_length[i].
+        if (last_length[i] == -1) {
+            for (int j = 0; j < i; j++) {
+                printf("Current j: %d\n", j);
+                PrintVect(last_length);
+                if (last_length[j] != -1 &&
+                        dictionary.find(domain.substr(j+1, i-j)) != 
+                        dictionary.cend()) {
+                    last_length[i] = i - j;
+                    break;
+                }
+            }
+        }
+        printf("\n");
+    }
+
+    printf("Finished table:\n");
+    PrintVect(last_length);
+    printf("\n");
+
+    vector<string> decompositions;
+    if (last_length.back() != -1) {
+        // Domain can be assembled by dictionary words.
+        int idx = static_cast<int>(domain.size()) - 1;
+        while (idx >= 0) {
+            decompositions.emplace_back(domain.substr(
+                        idx + 1 - last_length[idx], last_length[idx]
+                        ));
+            idx -= last_length[idx];
+        }
+
+        reverse(decompositions.begin(), decompositions.end());
+    }
+
+    return decompositions;
 }
 
 int main()
 {
+    string domain("amanaplanacanal");
+    unordered_set<string> dictionary{"a", "man", "plan", "canal"};    
+    PrintWords(DecomposeIntoDictionaryWords(domain, dictionary));
     return 0;
 }
