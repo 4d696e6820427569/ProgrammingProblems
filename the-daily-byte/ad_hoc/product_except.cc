@@ -42,9 +42,17 @@ vector<long long> ProductExcept(const vector<int>& arr)
  * Time complexity: O(n^2)
  * Space complexity: O(1)
  */
-vector<long long> ProductExceptNoDiv(const vector<int>& arr)
+vector<long long> ProductExceptNoDivBF(const vector<int>& arr)
 {
-    
+    vector<long long> res;
+    for (size_t i = 0; i < arr.size(); i++) {
+        long long new_elem = 1;
+        for (size_t j = 0; j < arr.size(); j++) {
+            if (j != i) new_elem *= arr[j];
+        }
+        res.emplace_back(new_elem);
+    }
+    return res;
 }
 
 int main()
@@ -52,10 +60,12 @@ int main()
     vector<int> tc1{1,2,3,4,5};
     vector<long long> tc1_res{120, 60, 40, 30, 24};
     assert(ProductExcept(tc1) == tc1_res);
+    assert(ProductExceptNoDivBF(tc1) == tc1_res);
 
     vector<int> tc2{3, 2, 1};
     vector<long long> tc2_res{2, 3, 6};
     assert(ProductExcept(tc2) == tc2_res);
+    assert(ProductExceptNoDivBF(tc1) == tc1_res);
 
     return 0;
 }
