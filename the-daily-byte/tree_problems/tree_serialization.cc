@@ -11,14 +11,18 @@
 #include <memory>
 #include <stack>
 #include <iostream>
+#include <sstream>
+#include <list>
 
 #include "../data_structures/bst_node.h"
 
 using std::string;
 using std::vector;
 using std::stack;
+using std::list;
 using std::shared_ptr;
 using std::make_shared;
+using std::istringstream;
 using data_structures::BSTNode;
 
 using pBSTNode = shared_ptr<BSTNode<int>>;
@@ -50,15 +54,34 @@ string Serialize(const pBSTNode& tree)
     return res;
 }
 
-pBSTNode DeserializeHelper(const string& s, int start, int end)
+pBSTNode DeserializeHelper(list<string>& s)
 {
-    pBSTNode root; 
-    return root;
+    if (s.empty())
+        return nullptr;
+
+    if (s.front() == "None,") {
+        s.pop_front();
+        return nullptr;
+    }
+
+    string in = s.front();
+    s.pop_front();
+    int value = stoi(in.substr(0, in.size() - 1));
+    pBSTNode new_root(make_shared<BSTNode<int>>(value));
+    new_root->left_ = DeserializeHelper(s);
+    new_root->right_ = DeserializeHelper(s);
+    return new_root;
 }
 
 pBSTNode Deserialize(const string& s)
 {
-    return DeserializeHelper(s, 0, static_cast<int>(s.size())-1);
+    istringstream sstr(s);
+    string in;
+    list<string> s_split;
+    while ( sstr >> in ) {
+        s_split.emplace_back(in);
+    }
+    return DeserializeHelper(s_split);
 }
 
 int main()
@@ -75,6 +98,7 @@ int main()
     tc1_root->left_->right_ = tc1_lr;
 
     std::cout << Serialize(tc1_root) << "\n";
+    std::cout << Serialize(Deserialize(Serialize(tc1_root))) << "\n";
     return 0;
 }
 

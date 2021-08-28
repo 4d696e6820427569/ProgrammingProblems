@@ -27,6 +27,8 @@ struct BSTNode<int>
 {
     BSTNode() {}
     BSTNode(int n) : data_(n) {}
+    BSTNode(int n, shared_ptr<BSTNode<int>> left, shared_ptr<BSTNode<int>> right)
+        : data_(n), left_(left), right_(right) {};
     int data_;
     shared_ptr<BSTNode<int>> left_, right_, parent_;
 };
