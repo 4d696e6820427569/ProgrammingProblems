@@ -10,6 +10,7 @@
 #include <vector>
 #include <cassert>
 #include <unordered_set>
+#include <algorithm>
 
 using std::vector;
 using std::unordered_set;
