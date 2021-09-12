@@ -1,5 +1,5 @@
 /**
- * Akuna Capital C++ Dev
+ * AC C++ Dev P2
  *
  * Given a max budget b, a number of cities n, and the array of money to spend
  * for each city, return the maximum expediture cost.

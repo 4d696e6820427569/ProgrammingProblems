@@ -1,5 +1,5 @@
 /**
- * Akuna Capital C++ Dev
+ * AC C++ Dev Coding P1
  *
  * Given e and n where n is the anchor time in UNIX epox nanoseconds.
  *

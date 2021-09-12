@@ -1,5 +1,5 @@
 /**
- * Akuna Capital C++ Dev
+ * AC C++ Dev P3
  * 
  *
  * Let n be the exact score you need to win.
