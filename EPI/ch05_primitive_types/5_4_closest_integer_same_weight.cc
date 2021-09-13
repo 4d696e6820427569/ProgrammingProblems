@@ -30,14 +30,15 @@
  */
 
 /**
- * It's safe to assume that our input's not ging to be all 0s or all 1s.
+ * It's safe to assume that our input's not going to be all 0s or all 1s.
  *
  * Conjecture: If the LSB is 1, move it to the nearest 0.
  * Otherwise, turn off the last 1 digit to 0 and turn on the LSB to 1.
  *
  * Time complexity: O(n) where n is the number of bits.
  *
- * Not correct.
+ * NOT CORRECT.
+ *
  */
 int ClosestIntSameWeight(int x)
 {

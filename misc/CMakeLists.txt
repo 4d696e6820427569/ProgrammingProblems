@@ -14,3 +14,6 @@ project(ActualCodingProblems)
 # add_subdirectory(./stack_problems ./build/stack_problems)
 # add_subdirectory(./object_oriented_design ./build/object_oriented_design)
 
+add_executable(HRT_Task1 HRT_Task1.cc)
+add_executable(HRT_Task2 HRT_Task2.cc)
+add_executable(HRT_Task3 HRT_Task3.cc)

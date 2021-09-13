@@ -40,8 +40,6 @@ double pow_brute_force(double x, int y)
  * Fast exponentiation: my solution.
  * Time complexity: O(logy)
  * Space complexity: O(logy)
- *
- *
  */
 double pow_fast_exp(double x, int y)
 {
@@ -57,7 +55,33 @@ double pow_fast_exp(double x, int y)
     return res;
 }
 
+/**
+ * Solution from EPI.
+ *
+ * Idea: x = (x^(y/2) )^2 iff y & 0x1 = 0.
+ * x = x * x^(y/2) * x^(y/2) iff y & 0x1 = 1.
+ *
+ * If y is negative, let x = 1/x and y = -y.
+ *
+ * Time complexity: O(n) where n is the number of bits.
+ */
+double pow_fast_epi(double x, int y)
+{
+    if (y < 0) {
+        x = 1/x;
+        y = -y;
+    }
 
+    while (y) {
+        if (y & 0x1) {
+            x *= x;
+        }
+        x *= x;
+        y >>= 0x1;
+    }
+
+    return x;
+}
 
 int main()
 {

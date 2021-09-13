@@ -33,16 +33,49 @@
  *
  */
 
+#define MAX_SIZE 250001
+
 #include <string>
+#include <cstdio>
+#include <iostream>
+#include <sstream>
+#include <fstream>
 
 using std::string;
 
+/**
+ * Brute force solution: Use recursion and reduce the string.
+ *
+ * Time complexity: O(N^2)
+ * Space complexity: O(1)
+ */
 string Transform(string& S)
 {
+    size_t idx = 0;
+    if ((idx = S.find("AB")) != string::npos ||
+        (idx = S.find("BA")) != string::npos ||
+        (idx = S.find("CD")) != string::npos ||
+        (idx = S.find("DC")) != string::npos) {
+        S.erase(idx, 2);
+        return Transform(S);
+    }
     return S;
 }
 
 int main()
 {
+    std::string test_case;
+    std::string solution;
+    std::ifstream test_cases_file("HRT_Task2_In");
+    std::ifstream solutions_file ("HRT_Task2_Out");
+    size_t test_count = 0;
+
+    while (std::getline(test_cases_file, test_case) &&
+           std::getline(solutions_file, solution)) {
+        assert(Transform(test_case) == solution);
+        test_count++;
+        printf("Passed %zu tests.\n", test_count);
+    }
+    
     return 0;
 }
