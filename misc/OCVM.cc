@@ -48,9 +48,13 @@ public:
 
     }
 
+    CoolAssembler(const CoolAssembler&) = delete;
+    CoolAssembler& operator=(const CoolAssembler&) = delete;
+
     ~CoolAssembler()
     {
-        delete[] mem_;
+        if (mem_ != nullptr)
+            delete[] mem_;
     }
 
     void PrintMemory()
@@ -96,7 +100,7 @@ public:
                 unsigned short width_char = asm_instruction[3] - '0';
                 unsigned long width = 0;
 
-                /*
+                
                 switch (width_char) {
                     case 2:
                         width = 0x1;
@@ -107,12 +111,13 @@ public:
                     case 8:
                         width = 0x3;
                 }
-                */
+                
 
                 // If width_char = 2, then width = 1.
                 // If width_char = 4, then width = 2.
                 // If width_char = 8, then width = 3.
-                while (width_char >>= 1) width++;
+                //unsigned width_char_copy = width_char;
+                //while (width_char_copy >>= 1) width++;
 
                 op_code_encoded |= width;
 
@@ -248,10 +253,12 @@ int main()
 
     unsigned char mem[memorySizeInBytes];
     memset(mem, 0, memorySizeInBytes);
-
-    //GetASMInstructions(mem);
     PrintMemory(mem, memorySizeInBytes, printBeginOffset, bytesPerElement, 
             numElementsToPrint, numElementsPerLine);
+    GetASMInstructions(mem);
+    PrintMemory(mem, memorySizeInBytes, printBeginOffset, bytesPerElement, 
+            numElementsToPrint, numElementsPerLine);
+
 
     return 0;
 }
