@@ -79,13 +79,54 @@ public:
     CoolAssembler(const CoolAssembler&) = delete;
     CoolAssembler& operator=(const CoolAssembler&) = delete;
 
+    CoolAssembler(CoolAssembler&& cool_asm)
+        : memory_size_(std::move(cool_asm.memory_size_))
+        , begin_offset_(std::move(cool_asm.begin_offset_))
+        , bytes_per_element_(std::move(cool_asm.bytes_per_element_))
+        , num_elements_(std::move(cool_asm.num_elements_))
+        , num_elements_per_line_(std::move(cool_asm.num_elements_per_line_))
+        , mem_(std::move(cool_asm.mem_))
+    {
+        cool_asm.memory_size_ = 0;
+        cool_asm.begin_offset_ = 0;
+        cool_asm.bytes_per_element_ = 0;
+        cool_asm.num_elements_ = 0;
+        cool_asm.num_elements_per_line_ = 0;
+        cool_asm.mem_ = nullptr;
+    }
+
+    CoolAssembler& operator=(CoolAssembler&& cool_asm)
+    {
+        if (this != &cool_asm) {
+            if (mem_ != nullptr)
+                delete[] mem_;
+            
+            // Move data.
+            memory_size_ = std::move(cool_asm.memory_size_);
+            begin_offset_ = std::move(cool_asm.begin_offset_);
+            bytes_per_element_ = std::move(cool_asm.bytes_per_element_);
+            num_elements_ = std::move(cool_asm.num_elements_);
+            num_elements_per_line_ = std::move(cool_asm.num_elements_per_line_);
+            mem_ = std::move(cool_asm.mem_);
+
+            // Release old data.
+            cool_asm.memory_size_ = 0;
+            cool_asm.begin_offset_ = 0;
+            cool_asm.bytes_per_element_ = 0;
+            cool_asm.num_elements_ = 0;
+            cool_asm.num_elements_per_line_ = 0;
+            cool_asm.mem_ = nullptr;
+        }
+        return *this;
+    }
+
     ~CoolAssembler()
     {
         if (mem_ != nullptr)
             delete[] mem_;
     }
 
-    void PrintMemory()
+    void PrintMemory() const
     {
         // Potential overflow here.
         uint64_t end_addr = begin_offset_ + num_elements_ * bytes_per_element_;
@@ -114,7 +155,7 @@ public:
         printf("\n");
     }
 
-    void GetInstructions()
+    void GetInstructions() const
     {
         // Get ASM instructions.
         string asm_instruction;
