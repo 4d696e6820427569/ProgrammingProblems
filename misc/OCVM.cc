@@ -2,6 +2,34 @@
  * OC interview question.
  *
  * Write a VM that simulates a computer.
+ *
+ * First, the program will receive 5 input in this order:
+ *
+ * memorySizeInBytes: the memory of the VM
+ * printBeginOffset: the starting address in memory to start printing out.
+ * bytesPerElement: the number of bytes per element.
+ * numElementsToPrint: the number of elements to print.
+ * numElementsPerLine: the number of elements per line.
+ *
+ *
+ * After that, it will accept bunch of ASM instructions.
+ * const unordered_map<string, pair<uint8_t, bool>> kOpCodes{
+    {"hlt", {1, false}},
+    {"psh", {2, true}},
+    {"pop", {3, false}},
+    {"equ", {4, true}},
+    {"lth", {5, true}},
+    {"inc", {6, false}},
+    {"add", {7, true}},
+    {"mlt", {8, true}},
+    {"jmp", {9, true}},
+    {"jmf", {10, true}}
+    };
+
+    Instruction is in the form of:
+    [code][width] [param:optional]
+
+    Instructions might contain additional parameters.
  */
 
 #include <unordered_map>
@@ -83,6 +111,7 @@ public:
             count_element++;
             printf(" ");
         }
+        printf("\n");
     }
 
     void GetInstructions()
@@ -111,7 +140,6 @@ public:
                         width = 0x3;
                 }
                 
-
                 // If width_char = 2, then width = 1.
                 // If width_char = 4, then width = 2.
                 // If width_char = 8, then width = 3.
@@ -162,84 +190,6 @@ private:
     uint8_t* mem_;
 };
 
-
-void PrintMemory(uint8_t mem[], uint64_t memorySizeInBytes,
-        uint64_t printBeginOffset, uint8_t bytesPerElement,
-        uint64_t numElementsToPrint, uint64_t numElementsPerLine)
-{
-    uint64_t end_addr = printBeginOffset + numElementsToPrint * bytesPerElement;
-    end_addr = end_addr < memorySizeInBytes ? end_addr : memorySizeInBytes;
-    uint64_t countElement = 0;
-
-    for (size_t start_addr = printBeginOffset; start_addr < end_addr; start_addr += bytesPerElement) {
-        if (countElement == numElementsPerLine) {
-            printf("\n");
-            countElement = 0;
-        }
-
-        // Print each element.
-        for (size_t i = 0; i < bytesPerElement; i++) {
-            printf("%02hhx", mem[start_addr + i]);
-        }
-
-        countElement++;
-        printf(" ");
-    }
-    printf("\n");
-}
-
-void GetASMInstructions(uint8_t mem[])
-{
-    // Get ASM instructions.
-    string asm_instruction;
-    uint64_t start_addr = 0;
-    while (std::getline(std::cin, asm_instruction)) {
-        // Read the instruction into memory.
-        string op_code = asm_instruction.substr(0, 3);
-        if (kOpCodes.find(op_code) != kOpCodes.end()) {
-            uint64_t op_code_encoded = (kOpCodes.at(op_code).first) << 0x2;
-
-            uint8_t width_char = asm_instruction[3] - '0';
-            uint64_t width = 0;
-            switch (width_char) {
-                case 2:
-                    width = 0x1;
-                    break;
-                case 4:
-                    width = 0x2;
-                    break;
-                case 8:
-                    width = 0x3;
-            }
-
-            uint8_t width_test = 0;
-            while (width_char >>= 1) width_test++;
-            assert(width_test == width);
-
-            op_code_encoded |= width;
-
-            // Write opcode and the width to the first byte.
-            mem[start_addr] = op_code_encoded;
-
-            // Check if there's a param. If there's a param, write it to memory
-            // according to the width.
-            if (kOpCodes.at(op_code).second) {
-                string param = asm_instruction.substr(5);
-                long param_int = std::stol(param);
-
-                for (int i = width_char; i > 0; i--) {
-                    mem[start_addr + i] = param_int & 0xFF;
-                    param_int >>= 0x8;
-                }
-
-                start_addr += width_char;
-            }
-
-            start_addr += 1;
-        }    
-    }
-}
-
 int main()
 {
     uint64_t memorySizeInBytes = 0;
@@ -252,13 +202,22 @@ int main()
     scanf("%lu %lu %hhu %lu %lu", &memorySizeInBytes, &printBeginOffset,
             &bytesPerElement, &numElementsToPrint, &numElementsPerLine);
 
+    /*
     uint8_t mem[memorySizeInBytes];
     memset(mem, 0, memorySizeInBytes);
+
     PrintMemory(mem, memorySizeInBytes, printBeginOffset, bytesPerElement, 
             numElementsToPrint, numElementsPerLine);
     GetASMInstructions(mem);
     PrintMemory(mem, memorySizeInBytes, printBeginOffset, bytesPerElement, 
             numElementsToPrint, numElementsPerLine);
+    */
+
+    CoolAssembler coolVM1(memorySizeInBytes, printBeginOffset, bytesPerElement,
+                            numElementsToPrint, numElementsPerLine);
+    coolVM1.PrintMemory();
+    coolVM1.GetInstructions();
+    coolVM1.PrintMemory();
 
     return 0;
 }
