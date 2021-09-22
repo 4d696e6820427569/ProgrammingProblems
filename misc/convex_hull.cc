@@ -6,6 +6,7 @@
 
 #include <cstdio>
 #include <vector>
+#include <stack>
 #include <algorithm>
 
 struct Point
@@ -52,7 +53,8 @@ struct CrossProductCmp
     CrossProductCmp(Point& _p) : p(_p) {}
     bool operator()(const Point& lhs, const Point& rhs) const
     {
-        return Vect2D(p, lhs).CrossProduct2D(Vect2D(p, rhs)).z; 
+        float cpz = Vect2D(p, lhs).CrossProduct2D(Vect2D(p, rhs)).z;
+        return cpz > 0;
     }
 
     Point& p;
@@ -61,12 +63,18 @@ struct CrossProductCmp
 void PrintPoints(const std::vector<Point>& points)
 {
     for (size_t i = 0; i < points.size(); i++) {
-        printf("%f %f\n", points[i].x, points[i].y);
+        printf("%d %d\n", (int) points[i].x, (int) points[i].y);
     }
 }
 
+/**
+ * Time complexity: O(nlgn)
+ * Space complexity: O(n)
+ */
 std::vector<Point> ConvexHull(std::vector<Point>& points)
 {
+    if (points.size() <= 2) return points;
+
     std::vector<Point> convex_hull_set;
 
     // Sort the points base on y-coordinate, if there are ties
@@ -76,13 +84,35 @@ std::vector<Point> ConvexHull(std::vector<Point>& points)
     // Aside the first point, sort the remaining points base on its polar
     // angle relative to the first point.
     std::sort(points.begin() + 1, points.end(), CrossProductCmp(points[0]));
+    
+    std::stack<Point> points_stack;
+    points_stack.push(points[0]);
+    points_stack.push(points[1]);
+    points_stack.push(points[2]);
 
-    PrintPoints(points);
+    for (size_t i = 3; i < points.size(); i++) {
+        // If the P_next_top P_top x P_next_top P_new > 0, then P_new
+        // is to the left.
+        float cpz = 0;
+        while (cpz <= 0) {
+            Point top_point = points_stack.top();
+            points_stack.pop();
+            Point next_top_point = points_stack.top();
+            points_stack.push(top_point);
 
-    for (int i = 2; i < points.size(); i++) {
-        printf("%f\n", Vect2D(points[0], points[i-1])
-                .CrossProduct2D(Vect2D(points[0], points[i])).z);
+            cpz = Vect2D(next_top_point, top_point)
+                .CrossProduct2D(Vect2D(next_top_point, points[i])).z;
+            if (cpz <= 0) points_stack.pop();
+        }
+
+        points_stack.push(points[i]);
     }
+
+    while (!points_stack.empty()) {
+        convex_hull_set.push_back(points_stack.top());
+        points_stack.pop();
+    }
+    std::reverse(convex_hull_set.begin(), convex_hull_set.end());
     return convex_hull_set;
 }
 
@@ -94,6 +124,8 @@ int main()
        points.push_back(Point(x, y));
     }
 
+    //ConvexHull(points);
     PrintPoints(ConvexHull(points));
+
     return 0;
 }
