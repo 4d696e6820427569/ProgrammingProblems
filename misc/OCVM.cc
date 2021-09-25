@@ -32,9 +32,12 @@
     Instructions might contain additional parameters.
  */
 
+//#define _DEBUG
+
 #include <unordered_map>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <cstdio>
 #include <string>
 #include <cstring>
@@ -105,7 +108,7 @@ struct AssemblerConfiguration
     // Memory size in bytes.
     uint64_t memory_size_;
 
-    // Offset address to print out.
+    // Offset starting address.
     uint64_t begin_offset_;
 
     // Number of elements.
@@ -115,7 +118,7 @@ struct AssemblerConfiguration
     uint64_t num_elements_per_line_;
 
     // Number of bytes per element.
-    uint8_t bytes_per_element_;
+    uint64_t bytes_per_element_;
 };
 
 class CoolAssembler
@@ -172,43 +175,46 @@ public:
             delete[] mem_;
     }
 
-    void PrintMemory() const
+    void PrintMemory(std::ostream& outp_stream) const
     {
-        // Potential overflow here.
+        // Potential overflow here. How to deal with it?
         uint64_t end_addr = asm_config_.begin_offset_ + 
             asm_config_.num_elements_ * asm_config_.bytes_per_element_;
         uint64_t count_element = 0;
 
         // Also want to do bound checking here. Invalid input? end_addr might go pass
-        // mem_ total size.
+        // mem_ total size. Solved by only print within the total memory size.
         //
         // Bound checking
         end_addr = end_addr < asm_config_.memory_size_ ? 
             end_addr : asm_config_.memory_size_;
+
         for (uint64_t start_addr = asm_config_.begin_offset_; start_addr < end_addr; 
                 start_addr += asm_config_.bytes_per_element_) {
             if (count_element == asm_config_.num_elements_per_line_) {
-                printf("\n");
+                outp_stream << "\n";
                 count_element = 0;
             }
 
             // Print each element.
             for (uint8_t i = 0; i < asm_config_.bytes_per_element_; i++) {
-                printf("%02hhx", mem_[start_addr + i]);
+                outp_stream << std::setfill('0') << std::setw(2);
+                outp_stream << std::hex << (0xFF & mem_[start_addr + i]);
+                //printf("%02hhx", mem_[start_addr + i]);
             }
 
             count_element++;
-            printf(" ");
+            outp_stream << " ";
         }
-        printf("\n");
+        outp_stream << "\n";
     }
 
-    void GetInstructions() const
+    void GetInstructions(std::istream& inp_stream) const
     {
         // Get ASM instructions.
         string asm_instruction;
         uint64_t start_addr = 0;
-        while (std::getline(std::cin, asm_instruction)) {
+        while (std::getline(inp_stream, asm_instruction)) {
 
             // Read the instruction into memory.
             string op_code = asm_instruction.substr(0, 3);
@@ -267,8 +273,30 @@ private:
     uint8_t* mem_;
 };
 
+/**
+ * Note to myself: Test cases might overflow operands or results.
+ * Initial assumption: Th input line will have 5 numeric arguments on it. We can no longer make the assumption
+ * that the input is formatted correctly and valid.
+ */
 int ReadConfiguration(std::istream& stdin, AssemblerConfiguration& config)
 {
+    stdin >> config.memory_size_;
+
+    stdin >> config.begin_offset_;
+
+    // 1, 2, 4, 8 bytes only.
+    stdin >> config.bytes_per_element_;
+
+    stdin >> config.num_elements_;
+
+    stdin >> config.num_elements_per_line_;
+
+    #ifdef _DEBUG
+    std::cout << config.memory_size_ << " " << config.begin_offset_
+        << " " << config.bytes_per_element_ << " " << config.num_elements_
+        << " " << config.num_elements_per_line_ << "\n";
+    #endif
+    
     return 0;
 }
 
@@ -277,15 +305,24 @@ int main()
     AssemblerConfiguration new_vm_config;
  
     // Get memory config.
+    /*
     scanf("%lu %lu %hhu %lu %lu", 
                 &new_vm_config.memory_size_, &new_vm_config.begin_offset_,
                 &new_vm_config.bytes_per_element_, &new_vm_config.num_elements_, 
                 &new_vm_config.num_elements_per_line_);
+    */
 
+    #ifdef _DEBUG
+    std::cout << new_vm_config.memory_size_ << " " << new_vm_config.begin_offset_
+        << " " << new_vm_config.bytes_per_element_ << " " << new_vm_config.num_elements_
+        << " " << new_vm_config.num_elements_per_line_ << "\n";
+    #endif
+
+    ReadConfiguration(std::cin, new_vm_config);
     CoolAssembler coolVM1(new_vm_config);
-    coolVM1.PrintMemory();
-    coolVM1.GetInstructions();
-    coolVM1.PrintMemory();
+    coolVM1.PrintMemory(std::cout);
+    coolVM1.GetInstructions(std::cin);
+    coolVM1.PrintMemory(std::cout);
 
     return 0;
 }
