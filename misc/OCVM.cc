@@ -217,6 +217,7 @@ public:
         while (std::getline(inp_stream, asm_instruction)) {
 
             // Read the instruction into memory.
+            // Need a better way to do this, what happens if the opcode's length is no longer 3?
             string op_code = asm_instruction.substr(0, 3);
             if (kOpCodes.find(op_code) != kOpCodes.end()) {
                 uint64_t op_code_encoded = (kOpCodes.at(op_code).first) << 0x2;
@@ -249,6 +250,8 @@ public:
                 // Check if there's a param. If there's a param, write it to memory
                 // according to the width.
                 if (kOpCodes.at(op_code).second) {
+                    // Same problem with the opcode's length. If the opcode's length is not 3,
+                    // this needs to be changed.
                     string param = asm_instruction.substr(5);
                     int64_t param_int = std::stol(param);
 
