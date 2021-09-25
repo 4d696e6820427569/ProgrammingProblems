@@ -58,6 +58,24 @@ const unordered_map<string, pair<uint8_t, bool>> kOpCodes{
     {"jmf", {10, true}}
 };
 
+struct AssemblerData
+{
+    // Memory size in bytes.
+    uint64_t memory_size_;
+
+    // Offset address to print out.
+    uint64_t begin_offset_;
+
+    // Number of bytes per element.
+    uint8_t bytes_per_element_;
+
+    // Number of elements.
+    uint64_t num_elements_;
+
+    // Number of elements per line.
+    uint64_t num_elements_per_line_;
+};
+
 class CoolAssembler
 {
 public:
@@ -230,6 +248,7 @@ private:
     // Memory segment.
     uint8_t* mem_;
 };
+
 
 int main()
 {
