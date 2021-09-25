@@ -58,22 +58,64 @@ const unordered_map<string, pair<uint8_t, bool>> kOpCodes{
     {"jmf", {10, true}}
 };
 
-struct AssemblerData
+struct AssemblerConfiguration
 {
+    AssemblerConfiguration()
+        : memory_size_(0)
+        , begin_offset_(0)
+        , num_elements_(0)
+        , num_elements_per_line_(0)
+        , bytes_per_element_(1)
+    {}
+    AssemblerConfiguration(const AssemblerConfiguration& config) = default;
+    AssemblerConfiguration& operator=(const AssemblerConfiguration& config) = default;
+    ~AssemblerConfiguration() {}
+    AssemblerConfiguration(AssemblerConfiguration&& config)
+        : memory_size_(config.memory_size_)
+        , begin_offset_(config.begin_offset_)
+        , num_elements_(config.num_elements_)
+        , num_elements_per_line_(config.num_elements_per_line_)
+        , bytes_per_element_(config.bytes_per_element_)
+    {
+        config.memory_size_ = 0;
+        config.begin_offset_ = 0;
+        config.bytes_per_element_ = 0;
+        config.num_elements_ = 0;
+        config.num_elements_per_line_ = 0;
+    }
+    AssemblerConfiguration& operator=(AssemblerConfiguration&& config)
+    {
+        if (this != &config) {
+            memory_size_ = config.memory_size_;
+            begin_offset_ = config.begin_offset_;
+            bytes_per_element_ = config.bytes_per_element_;
+            num_elements_ = config.num_elements_;
+            num_elements_per_line_ = config.num_elements_per_line_;
+
+            config.memory_size_ = 0;
+            config.begin_offset_ = 0;
+            config.bytes_per_element_ = 0;
+            config.num_elements_ = 0;
+            config.num_elements_per_line_ = 0;
+        }
+        return *this;
+    }
+
+
     // Memory size in bytes.
     uint64_t memory_size_;
 
     // Offset address to print out.
     uint64_t begin_offset_;
 
-    // Number of bytes per element.
-    uint8_t bytes_per_element_;
-
     // Number of elements.
     uint64_t num_elements_;
 
     // Number of elements per line.
     uint64_t num_elements_per_line_;
+
+    // Number of bytes per element.
+    uint8_t bytes_per_element_;
 };
 
 class CoolAssembler
@@ -81,15 +123,9 @@ class CoolAssembler
 public:
     CoolAssembler() = delete;
 
-    CoolAssembler(uint64_t memorySizeInBytes, uint64_t printBeginOffset, 
-            uint8_t bytesPerElement, uint64_t numElementsToPrint,
-            uint64_t numElementsPerLine)
-        : memory_size_(memorySizeInBytes)
-        , begin_offset_(printBeginOffset)
-        , bytes_per_element_(bytesPerElement)
-        , num_elements_(numElementsToPrint)
-        , num_elements_per_line_(numElementsPerLine)
-        , mem_(new uint8_t[memory_size_])
+    CoolAssembler(const AssemblerConfiguration& config)
+        : asm_config_(config)
+        , mem_(new uint8_t[asm_config_.memory_size_])
     {
 
     }
@@ -98,18 +134,14 @@ public:
     CoolAssembler& operator=(const CoolAssembler&) = delete;
 
     CoolAssembler(CoolAssembler&& cool_asm)
-        : memory_size_(std::move(cool_asm.memory_size_))
-        , begin_offset_(std::move(cool_asm.begin_offset_))
-        , bytes_per_element_(std::move(cool_asm.bytes_per_element_))
-        , num_elements_(std::move(cool_asm.num_elements_))
-        , num_elements_per_line_(std::move(cool_asm.num_elements_per_line_))
+        : asm_config_(std::move(cool_asm.asm_config_))
         , mem_(std::move(cool_asm.mem_))
     {
-        cool_asm.memory_size_ = 0;
-        cool_asm.begin_offset_ = 0;
-        cool_asm.bytes_per_element_ = 0;
-        cool_asm.num_elements_ = 0;
-        cool_asm.num_elements_per_line_ = 0;
+        cool_asm.asm_config_.memory_size_ = 0;
+        cool_asm.asm_config_.begin_offset_ = 0;
+        cool_asm.asm_config_.bytes_per_element_ = 0;
+        cool_asm.asm_config_.num_elements_ = 0;
+        cool_asm.asm_config_.num_elements_per_line_ = 0;
         cool_asm.mem_ = nullptr;
     }
 
@@ -120,19 +152,15 @@ public:
                 delete[] mem_;
             
             // Move data.
-            memory_size_ = std::move(cool_asm.memory_size_);
-            begin_offset_ = std::move(cool_asm.begin_offset_);
-            bytes_per_element_ = std::move(cool_asm.bytes_per_element_);
-            num_elements_ = std::move(cool_asm.num_elements_);
-            num_elements_per_line_ = std::move(cool_asm.num_elements_per_line_);
+            asm_config_ = std::move(cool_asm.asm_config_);
             mem_ = std::move(cool_asm.mem_);
 
             // Release old data.
-            cool_asm.memory_size_ = 0;
-            cool_asm.begin_offset_ = 0;
-            cool_asm.bytes_per_element_ = 0;
-            cool_asm.num_elements_ = 0;
-            cool_asm.num_elements_per_line_ = 0;
+            cool_asm.asm_config_.memory_size_ = 0;
+            cool_asm.asm_config_.begin_offset_ = 0;
+            cool_asm.asm_config_.bytes_per_element_ = 0;
+            cool_asm.asm_config_.num_elements_ = 0;
+            cool_asm.asm_config_.num_elements_per_line_ = 0;
             cool_asm.mem_ = nullptr;
         }
         return *this;
@@ -147,23 +175,25 @@ public:
     void PrintMemory() const
     {
         // Potential overflow here.
-        uint64_t end_addr = begin_offset_ + num_elements_ * bytes_per_element_;
+        uint64_t end_addr = asm_config_.begin_offset_ + 
+            asm_config_.num_elements_ * asm_config_.bytes_per_element_;
         uint64_t count_element = 0;
 
         // Also want to do bound checking here. Invalid input? end_addr might go pass
         // mem_ total size.
         //
         // Bound checking
-        end_addr = end_addr < memory_size_ ? end_addr : memory_size_;
-        for (uint64_t start_addr = begin_offset_; start_addr < end_addr; 
-                start_addr += bytes_per_element_) {
-            if (count_element == num_elements_per_line_) {
+        end_addr = end_addr < asm_config_.memory_size_ ? 
+            end_addr : asm_config_.memory_size_;
+        for (uint64_t start_addr = asm_config_.begin_offset_; start_addr < end_addr; 
+                start_addr += asm_config_.bytes_per_element_) {
+            if (count_element == asm_config_.num_elements_per_line_) {
                 printf("\n");
                 count_element = 0;
             }
 
             // Print each element.
-            for (uint8_t i = 0; i < bytes_per_element_; i++) {
+            for (uint8_t i = 0; i < asm_config_.bytes_per_element_; i++) {
                 printf("%02hhx", mem_[start_addr + i]);
             }
 
@@ -230,51 +260,29 @@ public:
     }
 
 private:
-    // Memory size in bytes.
-    uint64_t memory_size_;
-
-    // Offset address to print out.
-    uint64_t begin_offset_;
-
-    // Number of bytes per element.
-    uint8_t bytes_per_element_;
-
-    // Number of elements.
-    uint64_t num_elements_;
-
-    // Number of elements per line.
-    uint64_t num_elements_per_line_;
+    // Virtual machine configuration.
+    AssemblerConfiguration asm_config_;
     
     // Memory segment.
     uint8_t* mem_;
 };
 
+int ReadConfiguration(std::istream& stdin, AssemblerConfiguration& config)
+{
+    return 0;
+}
 
 int main()
 {
-    uint64_t memorySizeInBytes = 0;
-    uint64_t printBeginOffset = 0;
-    uint64_t numElementsToPrint = 0;
-    uint64_t numElementsPerLine = 0;
-    uint8_t bytesPerElement = 1;
-
+    AssemblerConfiguration new_vm_config;
+ 
     // Get memory config.
-    scanf("%lu %lu %hhu %lu %lu", &memorySizeInBytes, &printBeginOffset,
-            &bytesPerElement, &numElementsToPrint, &numElementsPerLine);
+    scanf("%lu %lu %hhu %lu %lu", 
+                &new_vm_config.memory_size_, &new_vm_config.begin_offset_,
+                &new_vm_config.bytes_per_element_, &new_vm_config.num_elements_, 
+                &new_vm_config.num_elements_per_line_);
 
-    /*
-    uint8_t mem[memorySizeInBytes];
-    memset(mem, 0, memorySizeInBytes);
-
-    PrintMemory(mem, memorySizeInBytes, printBeginOffset, bytesPerElement, 
-            numElementsToPrint, numElementsPerLine);
-    GetASMInstructions(mem);
-    PrintMemory(mem, memorySizeInBytes, printBeginOffset, bytesPerElement, 
-            numElementsToPrint, numElementsPerLine);
-    */
-
-    CoolAssembler coolVM1(memorySizeInBytes, printBeginOffset, bytesPerElement,
-                            numElementsToPrint, numElementsPerLine);
+    CoolAssembler coolVM1(new_vm_config);
     coolVM1.PrintMemory();
     coolVM1.GetInstructions();
     coolVM1.PrintMemory();
