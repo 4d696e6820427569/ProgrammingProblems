@@ -75,32 +75,34 @@ struct IOStream
     std::ostream& vm_err;
 };
 
-struct AssemblerConfiguration
+struct VMConfig
 {
-    AssemblerConfiguration()
+    VMConfig()
         : memory_size_(0)
         , begin_offset_(0)
         , num_elements_(0)
         , num_elements_per_line_(0)
         , bytes_per_element_(1)
+        , mem_(nullptr)
     {}
-    AssemblerConfiguration(const AssemblerConfiguration& config) = default;
-    AssemblerConfiguration& operator=(const AssemblerConfiguration& config) = default;
-    ~AssemblerConfiguration() {}
-    AssemblerConfiguration(AssemblerConfiguration&& config)
+    VMConfig(const VMConfig& config) = default;
+    VMConfig& operator=(const VMConfig& config) = default;
+    VMConfig(VMConfig&& config)
         : memory_size_(config.memory_size_)
         , begin_offset_(config.begin_offset_)
         , num_elements_(config.num_elements_)
         , num_elements_per_line_(config.num_elements_per_line_)
         , bytes_per_element_(config.bytes_per_element_)
+        , mem_(std::move(config.mem_))
     {
         config.memory_size_ = 0;
         config.begin_offset_ = 0;
         config.bytes_per_element_ = 0;
         config.num_elements_ = 0;
         config.num_elements_per_line_ = 0;
+        config.mem_ = nullptr;
     }
-    AssemblerConfiguration& operator=(AssemblerConfiguration&& config)
+    VMConfig& operator=(VMConfig&& config)
     {
         if (this != &config) {
             memory_size_ = config.memory_size_;
@@ -108,14 +110,22 @@ struct AssemblerConfiguration
             bytes_per_element_ = config.bytes_per_element_;
             num_elements_ = config.num_elements_;
             num_elements_per_line_ = config.num_elements_per_line_;
+            mem_ = config.mem_;
 
             config.memory_size_ = 0;
             config.begin_offset_ = 0;
             config.bytes_per_element_ = 0;
             config.num_elements_ = 0;
             config.num_elements_per_line_ = 0;
+            config.mem_ = nullptr;
         }
         return *this;
+    }
+
+    ~VMConfig()
+    {
+        if (mem_ != nullptr)
+            delete[] mem_;
     }
 
     // Memory size in bytes.
@@ -132,55 +142,59 @@ struct AssemblerConfiguration
 
     // Number of bytes per element.
     uint64_t bytes_per_element_;
+
+    uint8_t* mem_;
 };
 
-class CoolAssembler
+class CoolVirtualMachine
 {
 public:
-    CoolAssembler() = delete;
+    CoolVirtualMachine() = delete;
 
-    CoolAssembler(const AssemblerConfiguration& config)
-        : asm_config_(config)
-        , mem_(new uint8_t[asm_config_.memory_size_])
-    {}
-
-    CoolAssembler(const CoolAssembler&) = delete;
-    CoolAssembler& operator=(const CoolAssembler&) = delete;
-
-    CoolAssembler(CoolAssembler&& cool_asm)
-        : asm_config_(std::move(cool_asm.asm_config_))
-        , mem_(std::move(cool_asm.mem_))
+    CoolVirtualMachine(VMConfig& config)
+        : vm_config_(config)
+        , mem_(std::move(config.mem_))
     {
-        cool_asm.asm_config_.memory_size_ = 0;
-        cool_asm.asm_config_.begin_offset_ = 0;
-        cool_asm.asm_config_.bytes_per_element_ = 0;
-        cool_asm.asm_config_.num_elements_ = 0;
-        cool_asm.asm_config_.num_elements_per_line_ = 0;
-        cool_asm.mem_ = nullptr;
+        config.mem_ = nullptr;
     }
 
-    CoolAssembler& operator=(CoolAssembler&& cool_asm)
+    CoolVirtualMachine(const CoolVirtualMachine&) = delete;
+    CoolVirtualMachine& operator=(const CoolVirtualMachine&) = delete;
+
+    CoolVirtualMachine(CoolVirtualMachine&& cool_vm)
+        : vm_config_(std::move(cool_vm.vm_config_))
+        , mem_(std::move(cool_vm.mem_))
     {
-        if (this != &cool_asm) {
+        cool_vm.vm_config_.memory_size_ = 0;
+        cool_vm.vm_config_.begin_offset_ = 0;
+        cool_vm.vm_config_.bytes_per_element_ = 0;
+        cool_vm.vm_config_.num_elements_ = 0;
+        cool_vm.vm_config_.num_elements_per_line_ = 0;
+        cool_vm.mem_ = nullptr;
+    }
+
+    CoolVirtualMachine& operator=(CoolVirtualMachine&& cool_vm)
+    {
+        if (this != &cool_vm) {
             if (mem_ != nullptr)
                 delete[] mem_;
             
             // Move data.
-            asm_config_ = std::move(cool_asm.asm_config_);
-            mem_ = std::move(cool_asm.mem_);
+            vm_config_ = std::move(cool_vm.vm_config_);
+            mem_ = std::move(cool_vm.mem_);
 
             // Release old data.
-            cool_asm.asm_config_.memory_size_ = 0;
-            cool_asm.asm_config_.begin_offset_ = 0;
-            cool_asm.asm_config_.bytes_per_element_ = 0;
-            cool_asm.asm_config_.num_elements_ = 0;
-            cool_asm.asm_config_.num_elements_per_line_ = 0;
-            cool_asm.mem_ = nullptr;
+            cool_vm.vm_config_.memory_size_ = 0;
+            cool_vm.vm_config_.begin_offset_ = 0;
+            cool_vm.vm_config_.bytes_per_element_ = 0;
+            cool_vm.vm_config_.num_elements_ = 0;
+            cool_vm.vm_config_.num_elements_per_line_ = 0;
+            cool_vm.mem_ = nullptr;
         }
         return *this;
     }
 
-    ~CoolAssembler()
+    ~CoolVirtualMachine()
     {
         if (mem_ != nullptr)
             delete[] mem_;
@@ -192,26 +206,26 @@ public:
     void PrintMemory(const IOStream& io_stream) const
     {
         // Potential overflow here. How to deal with it?
-        uint64_t end_addr = asm_config_.begin_offset_ + 
-            asm_config_.num_elements_ * asm_config_.bytes_per_element_;
+        uint64_t end_addr = vm_config_.begin_offset_ + 
+            vm_config_.num_elements_ * vm_config_.bytes_per_element_;
         uint64_t count_element = 0;
 
         // Also want to do bound checking here. Invalid input? end_addr might go pass
         // mem_ total size. Solved by only print within the total memory size.
         //
         // Bound checking
-        end_addr = end_addr < asm_config_.memory_size_ ? 
-            end_addr : asm_config_.memory_size_;
+        end_addr = end_addr < vm_config_.memory_size_ ? 
+            end_addr : vm_config_.memory_size_;
 
-        for (uint64_t start_addr = asm_config_.begin_offset_; start_addr < end_addr; 
-                start_addr += asm_config_.bytes_per_element_) {
-            if (count_element == asm_config_.num_elements_per_line_) {
+        for (uint64_t start_addr = vm_config_.begin_offset_; start_addr < end_addr; 
+                start_addr += vm_config_.bytes_per_element_) {
+            if (count_element == vm_config_.num_elements_per_line_) {
                 io_stream.vm_out << "\n";
                 count_element = 0;
             }
 
             // Print each element.
-            for (uint8_t i = 0; i < asm_config_.bytes_per_element_; i++) {
+            for (uint8_t i = 0; i < vm_config_.bytes_per_element_; i++) {
                 io_stream.vm_out << std::setfill('0') << std::setw(2);
                 io_stream.vm_out << std::hex << (0xFF & mem_[start_addr + i]);
                 //printf("%02hhx", mem_[start_addr + i]);
@@ -295,9 +309,9 @@ public:
 
 private:
     // Virtual machine configuration.
-    AssemblerConfiguration asm_config_;
+    VMConfig vm_config_;
     
-    // Memory segment.
+    // Pointer to allocated memory segment.
     uint8_t* mem_;
 };
 
@@ -309,8 +323,7 @@ uint64_t GetUInt(const IOStream& io_stream, uint64_t upper_limit)
 
         // Check for failed extraction.
         if (io_stream.vm_in.fail()) {
-            io_stream.vm_in.clear();
-            io_stream.vm_in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            io_stream.IgnoreLineIn();
         } else {
             //io_stream.vm_in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             return result;
@@ -331,7 +344,7 @@ uint64_t GetBytesPerElement(const IOStream& io_stream)
             case 8:
                 return result;
             default:
-                io_stream.vm_in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                io_stream.IgnoreLineIn();
                 io_stream.vm_err << "Invalid bytes per element. Either 1, 2, 4, and 8.\n";
         }
     }
@@ -344,7 +357,7 @@ uint64_t GetBytesPerElement(const IOStream& io_stream)
  * 
  * What kind of input would break the program?
  */
-int ReadConfiguration(const IOStream& io_stream, AssemblerConfiguration& config)
+int ReadConfiguration(const IOStream& io_stream, VMConfig& config)
 {
     // 31U is 11111 in binary. Everytime an input is valid, turn on the bit for
     // valid_flag.
@@ -369,7 +382,18 @@ int ReadConfiguration(const IOStream& io_stream, AssemblerConfiguration& config)
             valid_flag = 0U;
             continue;
         } else {
-            valid_flag |= 1U;
+            // What happens if memory allocation fails?
+            // Since we need to check if we can actually allocate memory here,
+            // mem_ has to be allocated in a VMConfig object. And then later
+            // moved to a CoolVirtualMachine object. Other than that, there's
+            // no reason to have a mem_ field in VMConfig.
+            try {
+                config.mem_ = new uint8_t[config.memory_size_];
+                valid_flag |= 1U;
+            } catch (std::bad_alloc& ba) {
+                io_stream.vm_err << "Allocating memory failed.\n";
+                valid_flag = 0U;   
+            }
         }
 
         // What could possibly happen here?
@@ -379,7 +403,7 @@ int ReadConfiguration(const IOStream& io_stream, AssemblerConfiguration& config)
         // 4. User input some non-integer characters.
         //config.begin_offset_ = GetUInt(io_stream, config.memory_size_);
         io_stream.vm_in >> config.begin_offset_;
-        if (io_stream.vm_in.fail()) {
+        if (io_stream.vm_in.fail() || config.begin_offset_ >= config.memory_size_) {
             io_stream.IgnoreLineIn();
             io_stream.vm_err << "Invalid begin offset.\n";
             valid_flag = 0U;
@@ -433,6 +457,14 @@ int ReadConfiguration(const IOStream& io_stream, AssemblerConfiguration& config)
         } else {
             valid_flag |= (1U << 4);
         }
+   
+        /*
+        if (config.begin_offset_ + 
+                config.num_elements_ * config.bytes_per_element_ >= config.memory_size_) {
+            io_stream.vm_err << "The end address to print is greater than the memory size.\n";
+            valid_flag = 0U;
+        }
+        */
     }
     #ifdef _DEBUG
     std::cout << config.memory_size_ << " " << config.begin_offset_
@@ -447,7 +479,6 @@ int main()
 {
     IOStream io_stream {std::cin, std::cout, std::cerr};
 
-    AssemblerConfiguration new_vm_config;
  
     // Get memory config.
     /*
@@ -457,9 +488,20 @@ int main()
                 &new_vm_config.num_elements_per_line_);
     */
 
-    ReadConfiguration(io_stream, new_vm_config);
+    VMConfig new_vm_config;
+    {
+        ReadConfiguration(io_stream, new_vm_config);
+    }
 
-    CoolAssembler coolVM1(new_vm_config);
+    #ifdef _DEBUG
+    assert(new_vm_config.mem_ != nullptr);
+    #endif
+    CoolVirtualMachine coolVM1(new_vm_config);
+
+    #ifdef _DEBUG
+    assert(new_vm_config.mem_ == nullptr);
+    #endif
+
     coolVM1.PrintMemory(io_stream);
     coolVM1.GetInstructions(io_stream);
     coolVM1.PrintMemory(io_stream);
