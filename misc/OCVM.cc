@@ -64,6 +64,12 @@ const unordered_map<string, pair<uint8_t, bool>> kOpCodes{
 
 struct IOStream
 {
+    void IgnoreLineIn() const
+    {
+        vm_in.clear();
+        vm_in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+
     std::istream& vm_in;
     std::ostream& vm_out;
     std::ostream& vm_err;
@@ -306,7 +312,7 @@ uint64_t GetUInt(const IOStream& io_stream, uint64_t upper_limit)
             io_stream.vm_in.clear();
             io_stream.vm_in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         } else {
-            io_stream.vm_in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            //io_stream.vm_in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             return result;
         }
     }
@@ -325,6 +331,7 @@ uint64_t GetBytesPerElement(const IOStream& io_stream)
             case 8:
                 return result;
             default:
+                io_stream.vm_in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 io_stream.vm_err << "Invalid bytes per element. Either 1, 2, 4, and 8.\n";
         }
     }
@@ -339,71 +346,100 @@ uint64_t GetBytesPerElement(const IOStream& io_stream)
  */
 int ReadConfiguration(const IOStream& io_stream, AssemblerConfiguration& config)
 {
-    bool valid_mem_size = false;
-    bool valid_offset = false;
-    bool valid_bytes_per_element = true;
-    bool valid_num_elements = false;
-    bool valid_num_elements_per_line = false;
+    // 31U is 11111 in binary. Everytime an input is valid, turn on the bit for
+    // valid_flag.
+    const uint8_t kValidInput = 31U;
+    uint8_t valid_flag = 0U;
 
-    while (!(valid_mem_size && valid_offset && 
-            valid_bytes_per_element && valid_num_elements &&
-            valid_num_elements_per_line)) {
-
+    // Overall:
+    // begin_offset_ + num_elements * bytes_per_element_ < memory_size_;
+    // If not, prompt the user to input again. 
+    while (valid_flag != kValidInput) {
         // What could possibly happen here?
         // 1. User input a too large/too small number.
         // 2. User input a negative number.
         // 3. User input a valid number but the OS does not permit such allocation size
         // for a single buffer.
         // 4. User input some non-integer characters.
+        //config.memory_size_ = GetUInt(io_stream, std::numeric_limits<uint64_t>::max());
         io_stream.vm_in >> config.memory_size_;
-        valid_mem_size = true;
+        if (io_stream.vm_in.fail()) {
+            io_stream.IgnoreLineIn();
+            io_stream.vm_err << "Invalid memory size.\n";
+            valid_flag = 0U;
+            continue;
+        } else {
+            valid_flag |= 1U;
+        }
 
         // What could possibly happen here?
         // 1. User input a too large / too small number.
         // 2. User input a negative number.
         // 3. User input a number which is outside of the range of [0, memory_size_]
         // 4. User input some non-integer characters.
+        //config.begin_offset_ = GetUInt(io_stream, config.memory_size_);
         io_stream.vm_in >> config.begin_offset_;
-        valid_offset = true;
+        if (io_stream.vm_in.fail()) {
+            io_stream.IgnoreLineIn();
+            io_stream.vm_err << "Invalid begin offset.\n";
+            valid_flag = 0U;
+            continue;
+        } else {
+            valid_flag |= (1U << 1);
+        }
 
         // 1, 2, 4, 8 bytes only.
-        // User input anything rather than 1, 2, 4, or 8. 
+        // User input anything rather than 1, 2, 4, or 8.
+        //config.bytes_per_element_ = GetBytesPerElement(io_stream);
         io_stream.vm_in >> config.bytes_per_element_;
-        switch (config.bytes_per_element_) {
-            case 1: break;
-            case 2: break;
-            case 4: break;
-            case 8: break;
-            default:
-                io_stream.vm_err << "Number of bytes per elements must be either 1, 2, 4, or 8.\n";
-                valid_bytes_per_element = false;
-                break;
-        }
-
-        if (!valid_bytes_per_element) {
-            io_stream.vm_in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            io_stream.vm_in.clear();
-            valid_bytes_per_element = true;
+        if (io_stream.vm_in.fail()) {
+            io_stream.IgnoreLineIn();
+            valid_flag = 0U;
             continue;
+        } else {
+            switch (config.bytes_per_element_) {
+                case 1:
+                case 2:
+                case 4:
+                case 8:
+                    valid_flag |= (1U << 2);
+                    break;
+                default:
+                    io_stream.IgnoreLineIn();
+                    io_stream.vm_err << "Invalid bytes per element. Either 1, 2, 4, and 8.\n";
+                    valid_flag = 0U;
+                    break;
+            }
         }
 
-        // 
+        if (!valid_flag) continue;
+
+        //config.num_elements_ = GetUInt(io_stream, std::numeric_limits<uint64_t>::max());
         io_stream.vm_in >> config.num_elements_;
-        valid_num_elements = true;
+        if (io_stream.vm_in.fail()) {
+            io_stream.IgnoreLineIn();
+            io_stream.vm_err << "Invalid number of elements to print out.\n";
+            valid_flag = 0U;
+        } else {
+            valid_flag |= (1U << 3);
+        }
 
+        //config.num_elements_per_line_ = GetUInt(io_stream, std::numeric_limits<uint64_t>::max());
         io_stream.vm_in >> config.num_elements_per_line_;
-        valid_num_elements_per_line = true;
-
-        // Overall:
-        // begin_offset_ + num_elements * bytes_per_element_ < memory_size_;
-        // If not, prompt the user to input again.
-    } 
-    
+        if (io_stream.vm_in.fail()) {
+            io_stream.IgnoreLineIn();
+            io_stream.vm_err << "Invalid number of elements per line.\n";
+            valid_flag = 0U;
+        } else {
+            valid_flag |= (1U << 4);
+        }
+    }
     #ifdef _DEBUG
     std::cout << config.memory_size_ << " " << config.begin_offset_
         << " " << config.bytes_per_element_ << " " << config.num_elements_
         << " " << config.num_elements_per_line_ << "\n";
     #endif
+
     return 0;
 }
 
