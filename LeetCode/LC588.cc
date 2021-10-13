@@ -38,7 +38,7 @@ public:
         for (const auto& p : t->files_)
             ls_result.emplace_back(p.first);
 
-
+        std::sort(ls_result.begin(), ls_result.end());
         return ls_result;
     }
 
@@ -49,7 +49,7 @@ public:
         SplitPath(path, files);
         int path_len = static_cast<int>(files.size());
         for (int i = 1; i < path_len; i++) {
-            if (t->files_.find(files[i]) != t->files_.end()) {
+            if (t->files_.find(files[i]) == t->files_.end()) {
                 t->files_.emplace(files[i], std::make_shared<File>(files[i], false));
             }
             t = t->files_.at(files[i]);
@@ -58,12 +58,34 @@ public:
 
     void addContentToFile(std::string file_path, std::string content)
     {
+        std::shared_ptr<File> t = root_;
+        std::vector<std::string> files;
+        SplitPath(file_path, files);
+        int path_len = static_cast<int>(files.size());
+        for (int i = 1; i < path_len-1; i++) {
+            if (t->files_.find(files[i]) == t->files_.end()) {
+                t->files_.emplace(files[i], std::make_shared<File>(files[i], false));
+            }
+            t = t->files_.at(files[i]);
+        }
 
+        if (t->files_.find(files[path_len-1]) == t->files_.end())
+            t->files_.emplace(files[path_len-1], std::make_shared<File>(files[path_len-1], true));
+        t = t->files_.at(files[path_len-1]);
+        t->content_ += content;
     }
 
     std::string readContentFromFile(std::string file_path)
     {
-        return "";
+        std::shared_ptr<File> t = root_;
+        std::vector<std::string> files;
+        SplitPath(file_path, files);
+        int path_len = static_cast<int>(files.size());
+        for (int i = 1; i < path_len; i++) {
+            t = t->files_.at(files[i]);
+        }
+
+        return t->content_;
     }
 
 
@@ -89,6 +111,7 @@ private:
         {}
 
         std::string name_;
+        std::string content_;
         std::unordered_map<std::string, std::shared_ptr<File>> files_;
         bool is_file_;
     };
