@@ -12,15 +12,17 @@
  * How would you compute the parity of a very large number of 64-bit words?
  *
  * Hint: Use a lookup table. Don't use 2^64 entries.
- */
+ * */
 
 #include <cassert>
 #include <cstdio>
+#include <vector>
 
 #define P2(n) n, n ^ 1, n ^ 1, n
 #define P4(n) P2(n), P2(n ^ 1), P2(n ^ 1), P2(n)
 #define P6(n) P4(n), P4(n ^ 1), P4(n ^ 1), P4(n)
 #define LOOK_UP P6(0), P6(1), P6(1), P6(0)
+
 
 unsigned int precomputed_parity[256] = { LOOK_UP };
 

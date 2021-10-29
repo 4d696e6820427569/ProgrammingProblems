@@ -40,9 +40,10 @@ struct Point
 
 float EuclideanDistance(const Point& p1, const Point& p2)
 {
-    return sqrtf( (p1.x - p2.x) * (p1.x - p2.x) +
-                  (p1.y - p2.y) * (p1.y - p2.y)
-                );
+    return sqrtf( 
+                (p1.x - p2.x) * (p1.x - p2.x) +
+                (p1.y - p2.y) * (p1.y - p2.y)
+            );
 }
 
 void PrintPoints(const std::vector<Point>& points)
