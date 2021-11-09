@@ -1,6 +1,6 @@
 /**
  * Implementation of Closest Points agorithm in 2D space.
- * Minimum C++ version: C++98.
+ * Minimum C++ version: C++11.
  * Author: Minh Bui
  */
 
@@ -50,9 +50,17 @@ struct CmpY
 {
     bool operator()(const Point& p1, const Point& p2)
     {
-        return p2.y < p2.y;
+        return p1.y < p2.y;
     }
 };
+
+void PrintPoints(const std::vector<Point>& points)
+{
+    for (size_t i = 0; i < points.size(); i++) {
+        printf("%d %d\n", (int) points[i].x, (int) points[i].y);
+    }
+}
+
 
 float EuclideanDistance(const Point& p1, const Point& p2)
 {
@@ -65,8 +73,8 @@ float GetMinPoints(const Point& p1, const Point& p2, float& min_dist, std::vecto
     if (d < min_dist) {
         min_dist = d;
         if (result.empty()) {
-            result.emplace_back(p1);
-            result.emplace_back(p2);
+            result.push_back(p1);
+            result.push_back(p2);
         } else {
             result[0] = p1;
             result[1] = p2;
@@ -87,25 +95,18 @@ float ClosestPointsBF(std::vector<Point>& points, int l, int r, float& min_d, st
     return min_d;
 }
 
-void PrintPoints(const std::vector<Point>& points)
-{
-    for (size_t i = 0; i < points.size(); i++) {
-        printf("%d %d\n", (int) points[i].x, (int) points[i].y);
-    }
-}
-
 
 float ClosestHelper(std::vector<Point>& points, int l, int r, float& min_dist, std::vector<Point>& result, std::vector<Point>& tmp)
 {
-    float min_d = 0;
     if (r - l <= 3) {
-        return ClosestPointsBF(points, l, r, min_dist, result);
+        min_dist = ClosestPointsBF(points, l, r, min_dist, result);
+        return min_dist;
     }
 
     int m = l + ((r - l) >> 1);
     int mid_x = points[m].x;
-    float ld = ClosestHelper(points, l, m, min_dist, result, tmp);
-    float rd = ClosestHelper(points, m, r, min_dist, result, tmp);
+    min_dist = ClosestHelper(points, l, m, min_dist, result, tmp);
+    min_dist = ClosestHelper(points, m, r, min_dist, result, tmp);
 
     std::merge(begin(points) + l, begin(points) + m, begin(points) + m, begin(points) + r, begin(tmp), CmpY());
     std::copy(begin(tmp), begin(tmp) + r - l, begin(points) + l);
@@ -114,12 +115,12 @@ float ClosestHelper(std::vector<Point>& points, int l, int r, float& min_dist, s
     for (int i = l; i < r; i++) {
         if (fabs(points[i].x - mid_x) < min_dist) {
             for (int j = temp_sz - 1; j >= 0 && (points[i].y - tmp[j].y) < min_dist; j--) {
-                min_d = GetMinPoints(points[i], tmp[j], min_d, result);
+                min_dist = GetMinPoints(points[i], tmp[j], min_dist, result);
             }
             tmp[temp_sz++] = points[i];
         }
     }
-    return min_d;
+    return min_dist;
 }
 
 bool FloatEquals(float f1, float f2)
@@ -134,7 +135,8 @@ float ClosestPoints(std::vector<Point>& points, std::vector<Point>& result)
 
     std::sort(begin(points), end(points), CmpX());
     float min_dist = std::numeric_limits<float>::max();
-    return ClosestHelper(points, 0, points.size(), min_dist, result, tmp);
+    ClosestHelper(points, 0, points.size(), min_dist, result, tmp);
+    return min_dist;
 }
 
 
@@ -143,27 +145,31 @@ int main()
     float x, y;
     std::vector<Point> points;
     while (scanf("%f %f", &x, &y) != EOF) {
-        points.push_back(Point(x, y));
+        points.emplace_back(Point(x, y));
     }
     
     std::vector<Point> closestPointsBF_result;
     std::vector<Point> closestPointsDiv_result;
 
-    float ddaq = 0;
-    float dbf = 0;
+    float ddaq = std::numeric_limits<float>::max();
+    float dbf = std::numeric_limits<float>::max();
 
     ClosestPointsBF(points, 0, points.size(), dbf, closestPointsBF_result);
     ddaq = ClosestPoints(points, closestPointsDiv_result);
 
-    /*
+    
     assert((closestPointsBF_result == closestPointsDiv_result) || [&]() {
         std::reverse(std::begin(closestPointsBF_result), std::end(closestPointsBF_result));
         return closestPointsBF_result == closestPointsDiv_result;
     }());
-    */
+    
 
-    //assert(FloatEquals(ddaq, dbf));
-    printf("%f\n", ddaq);
+    assert(FloatEquals(ddaq, dbf));
+    printf("Divide and conquer result: %f\n", ddaq);
     PrintPoints(closestPointsDiv_result);
+    printf("\n");
+    printf("Brute force result: %f\n", dbf);
+    PrintPoints(closestPointsBF_result);
+
     return 0;
 }
