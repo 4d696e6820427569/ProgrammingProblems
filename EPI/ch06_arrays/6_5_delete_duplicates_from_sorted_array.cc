@@ -18,11 +18,13 @@
  */
 
 #include <vector>
+#include <unordered_set>
 #include <cassert>
 #include <cstdio>
 #include <algorithm>
 
 using std::vector;
+using std::unordered_set;
 
 void print_vect(const vector<int>& v)
 {
@@ -103,7 +105,46 @@ void delete_dups_from_sorted_array_sorted(vector<int> &v)
  * O(n) space
  *
  * Use a hash table
+ * */
+int delete_dups_from_sorted_array_hash_set(vector<int>& arr)
+{
+    // Build the hash table.
+    unordered_set<int> us;
+    for (const auto& e : arr) {
+        if (us.find(e) == us.end())
+            us.emplace(e);
+    }
+
+    // Reinsert back into the array.
+    size_t i = 0;
+    for (const auto& e : us) {
+        arr[i++] = e;
+    }
+    int result_idx = i;
+    while (i < arr.size())
+        arr[i] = 0;
+    return result_idx;
+}
+
+/**
+ * My personal most efficient solution. (Testing out)
+ * Time complexity: O(n)
+ * Space complexity: O(1)
  */
+int delete_dups_from_sorted_array_efficient(vector<int>& arr)
+{
+    int prev = arr[0];
+    size_t valid_idx = 1;
+    
+    for (size_t i = 1; i < arr.size(); i++) {
+        if (arr[i] != prev) {
+            std::swap(arr[i], arr[valid_idx]);
+            prev = arr[valid_idx++];
+        }
+    }
+
+    return valid_idx;
+}
 
 
 
@@ -138,7 +179,13 @@ int main()
     //delete_dups_from_sorted_array(tc1);
     //delete_dups_from_sorted_array_sorted(tc1);
     //assert(tc1 == tc1_res);
-    delete_dups_from_sorted_array(tc1);
+    //delete_dups_from_sorted_array(tc1);
+    print_vect(tc1);
+    printf("Unique elements: 6\n");
+    int result_tc1 = delete_dups_from_sorted_array_efficient(tc1);
+    print_vect(tc1);
+    printf("Number of unique elements in result: %d\n", result_tc1);
+
 
     vector<int> tc2     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     vector<int> tc2_res {1, 2, 2, 2, 2, 2, 2, 2, 2, 2};
@@ -146,7 +193,12 @@ int main()
     //delete_dups_from_sorted_array(tc2);
     //delete_dups_from_sorted_array_sorted(tc2);
     //assert(tc2 == tc2_res);
-    delete_dups_from_sorted_array(tc2);
+    //delete_dups_from_sorted_array(tc2);
+    print_vect(tc2);
+    printf("Unique elements: 1\n");
+    int result_tc2 = delete_dups_from_sorted_array_efficient(tc2);
+    print_vect(tc2);
+    printf("Number of unique elements in result: %d\n", result_tc2);
 
     return 0;
 }
