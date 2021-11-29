@@ -48,6 +48,40 @@ void ReverseSublist(pListNode& ll, int s, int f)
 {
 }
 
+pListNode ReverseLinkedListHelper(pListNode head, pListNode& new_head, pListNode prev)
+{
+    if (head == nullptr) return nullptr;
+    if (head->getNext() == nullptr) new_head = head;
+    pListNode reversed_next_list = ReverseLinkedListHelper(head->getNext(), new_head, prev);
+    if (reversed_next_list != nullptr) reversed_next_list->setNext(head);
+    return head;
+}
+
+void ReverseLinkedListRecursive(pListNode head)
+{
+    ReverseLinkedListHelper(head, head, nullptr);
+}
+
+void ReverseLinkedListIterative(pListNode& head)
+{
+    if (head == nullptr) return;
+
+    pListNode prev = nullptr;
+    pListNode idx1 = head;
+    pListNode idx2 = idx1->getNext();
+
+    while (idx1 != nullptr) {
+        idx1->setNext(prev);
+        prev = idx1;
+        idx1 = idx2;
+
+        if (idx2 != nullptr)
+            idx2 = idx2->getNext();
+    }
+
+    head = prev;
+}
+
 int main()
 {
     /*

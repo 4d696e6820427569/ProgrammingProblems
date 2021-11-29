@@ -1,6 +1,7 @@
 //#define _DEBUG
 
 #include <unordered_map>
+#include <vector>
 #include <limits>
 #include <sstream>
 #include <iostream>
@@ -47,22 +48,16 @@ struct VMConfig
         , num_elements_(0)
         , num_elements_per_line_(0)
         , bytes_per_element_(1)
-        , mem_(nullptr)
     {}
     VMConfig(const VMConfig&) = default;
     VMConfig& operator=(const VMConfig&) = default;
-    ~VMConfig()
-    {
-        if (mem_ != nullptr)
-            delete[] mem_;
-    }
+    ~VMConfig() = default;
 
     uint64_t memory_size_;
     uint64_t begin_offset_;
     uint64_t num_elements_;
     uint64_t num_elements_per_line_;
     uint64_t bytes_per_element_;
-    uint8_t* mem_;
 };
 
 class CoolVirtualMachine
@@ -71,20 +66,19 @@ public:
     CoolVirtualMachine() = delete;
     CoolVirtualMachine(VMConfig& config)
         : vm_config_(config)
-        , num_asm_instr_(0)
-        , mem_(std::move(config.mem_))
-    {
-        config.mem_ = nullptr;
-    }
+        , mem_(config.memory_size_, 0)
+    {}
 
     CoolVirtualMachine(const CoolVirtualMachine&) = delete;
     CoolVirtualMachine& operator=(const CoolVirtualMachine&) = delete;
+    ~CoolVirtualMachine() = default;
 
     /*
     * Dump the memory in hex of in mem_ to the output device.
     */
     void PrintMemory(const IOStream& io_stream) const
     {
+        io_stream.vm_out << "Total memory: " << vm_config_.memory_size_;
         // Potential overflow here. How to deal with it?
         uint64_t end_addr = vm_config_.begin_offset_ +
             vm_config_.num_elements_ * vm_config_.bytes_per_element_;
@@ -174,7 +168,6 @@ public:
 
                 start_addr += 1;
             }
-            num_asm_instr_++;
         }
     }
 
@@ -219,7 +212,6 @@ public:
     */
     void ExecuteASM(const IOStream& io_stream)
     {
-        uint64_t count_instr = num_asm_instr_;
         uint64_t pc = 0;
         uint64_t sp = vm_config_.memory_size_ - 1;
 
@@ -227,7 +219,7 @@ public:
         // Or when the stack overflow into the instructions?
         // Problem count_instr might cause problem on certain programs with jmp
         // instruciton.
-        while (count_instr--) {
+        while (pc < vm_config_.memory_size_) {
             // Read the first byte for op_code.
             uint64_t op_code = mem_[pc] >> 2U;
 
@@ -256,7 +248,6 @@ public:
             int64_t second_val = 0;
             int64_t sum = 0;
             int64_t prod = 1;
-            uint64_t mask = 0;
 
             bool all_less = true;
             bool all_equal = true;
@@ -412,11 +403,7 @@ private:
 
     VMConfig vm_config_;
 
-    // Number of instruction read
-    uint64_t num_asm_instr_;
-
-    // Pointer to allocated memory segment.
-    uint8_t* mem_;
+    std::vector<uint8_t> mem_;
 };
 
 void ReadConfiguration(const IOStream& io_stream, VMConfig& config)
@@ -424,7 +411,7 @@ void ReadConfiguration(const IOStream& io_stream, VMConfig& config)
     // TODO: Change something about this lazy approach.
     // 31U is 11111 in binary. Everytime an input is valid, turn on the bit for
     // valid_flag.
-    const uint8_t kValidInput = 31U;
+    const uint8_t kValidInput = 0b11111;
     uint8_t valid_flag = 0U;
 
     // Overall:
@@ -444,14 +431,7 @@ void ReadConfiguration(const IOStream& io_stream, VMConfig& config)
             continue;
         } else {
             // Allocation might fail even with valid input.
-            try {
-                config.mem_ = new uint8_t[config.memory_size_];
-                memset(config.mem_, 0, config.memory_size_);
-                valid_flag |= 1U;
-            } catch (std::bad_alloc& ba) {
-                io_stream.vm_err << "Allocating memory failed.\n";
-                valid_flag = 0U;
-            }
+            valid_flag |= 1;
         }
 
         // Possible invalid input.
@@ -486,11 +466,9 @@ void ReadConfiguration(const IOStream& io_stream, VMConfig& config)
                     io_stream.IgnoreLineIn();
                     io_stream.vm_err << "Invalid bytes per element. Either 1, 2, 4, or 8.\n";
                     valid_flag = 0U;
-                    break;
+                    continue;
             }
         }
-
-        if (!valid_flag) continue;
 
         io_stream.vm_in >> config.num_elements_;
         if (io_stream.vm_in.fail()) {
