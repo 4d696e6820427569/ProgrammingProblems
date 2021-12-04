@@ -36,7 +36,7 @@ class Trie
 public:
     struct TrieNode
     {
-        TrieNode() : children{}, is_word{false} {}
+        TrieNode():children{}, is_word{false} {}
 
         unordered_map<char, shared_ptr<TrieNode>> children;
         bool is_word;
@@ -62,7 +62,7 @@ public:
         node->is_word = true;
     }
 
-    bool search(string word)
+    bool search(string word) const
     {
         shared_ptr<TrieNode> node = root;
         for (const char& c : word) {
@@ -73,7 +73,7 @@ public:
         return node->is_word;
     }
 
-    bool startsWith(string prefix)
+    bool startsWith(string prefix) const
     {
         shared_ptr<TrieNode> node = root;
         for (const char& c : prefix) {
@@ -84,6 +84,7 @@ public:
         return true;
     }
 
+private:
     shared_ptr<TrieNode> root;
 };
 
